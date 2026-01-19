@@ -1,6 +1,6 @@
 
 function login(){
-  fetch('https://YOUR_BACKEND_URL/admin/login',{
+  fetch('https://website-production-f869.up.railway.app/admin/login',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({password:document.getElementById('password').value})
@@ -10,7 +10,7 @@ function login(){
 }
 
 function add(){
-  fetch('https://YOUR_BACKEND_URL/admin/add-product',{
+  fetch('https://website-production-f869.up.railway.app/admin/add-product',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
