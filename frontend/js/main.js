@@ -3,25 +3,46 @@ const API_URL = 'https://website-production-f869.up.railway.app/products';
 fetch(API_URL)
   .then(res => res.json())
   .then(data => {
-    const d = document.getElementById('products');
-    d.innerHTML = ''; 
+    const container = document.getElementById('products-container');
+    container.innerHTML = ''; 
 
     data.forEach(p => {
-      d.innerHTML += `
-        <div class="product-card glass rounded-2xl p-4 flex flex-col transition-all duration-300">
-            <div class="bg-gray-900/50 rounded-xl mb-4 overflow-hidden aspect-square flex items-center justify-center">
-                <img src="${p.image || 'https://via.placeholder.com/150'}" class="w-full h-full object-contain p-4">
+      // ডামি ডিসকাউন্ট ক্যালকুলেশন (ছবির মতো দেখাতে)
+      const oldPrice = Math.round(p.price * 1.4);
+      const discount = Math.round(((oldPrice - p.price) / oldPrice) * 100);
+
+      container.innerHTML += `
+        <div class="glass-card rounded-2xl p-4 flex flex-col relative group">
+            <div class="absolute top-3 left-3 bg-red-500/20 text-red-500 text-[10px] font-black px-2 py-0.5 rounded-md">
+                -${discount}%
             </div>
-            <h3 class="text-sm font-semibold text-white mb-2 truncate">${p.name}</h3>
-            <div class="flex justify-between items-end mt-auto">
+            
+            <div class="absolute top-3 right-3 text-gray-600 hover:text-pink-500 transition cursor-pointer">
+                <i class="far fa-heart text-sm"></i>
+            </div>
+
+            <div class="w-full aspect-square flex items-center justify-center mb-5 bg-[#0f121a] rounded-xl overflow-hidden">
+                <img src="${p.image || 'https://via.placeholder.com/150'}" 
+                     class="w-3/4 h-3/4 object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]" 
+                     alt="${p.name}">
+            </div>
+
+            <h3 class="text-xs font-semibold text-gray-300 mb-1 truncate">${p.name}</h3>
+            <p class="text-[10px] text-gray-600 mb-4">Instant Delivery</p>
+            
+            <div class="mt-auto flex justify-between items-end">
                 <div>
-                    <p class="text-pink-500 font-black text-xl">৳${p.price}</p>
-                    <p class="text-gray-500 text-[10px] line-through">৳${Math.round(p.price * 1.3)}</p>
+                    <span class="block text-pink-500 font-black text-xl leading-none">৳${p.price}</span>
+                    <span class="text-[10px] text-gray-600 line-through leading-none italic">৳${oldPrice}</span>
                 </div>
-                <button class="bg-violet-600 p-2 rounded-lg hover:bg-pink-500 transition">
-                    <i class="fas fa-plus text-xs text-white"></i>
+                <button class="bg-[#1e293b] hover:bg-pink-600 p-2 rounded-lg transition text-white">
+                    <i class="fas fa-shopping-cart text-xs"></i>
                 </button>
             </div>
         </div>`;
     });
+  })
+  .catch(err => {
+    console.error("Fetch Error:", err);
+    document.getElementById('products-container').innerHTML = '<p class="col-span-full text-center text-red-500">Failed to connect to backend!</p>';
   });
