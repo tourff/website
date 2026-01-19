@@ -1,5 +1,5 @@
 
-fetch('https://YOUR_BACKEND_URL/products')
+fetch('https://website-production-f869.up.railway.app/products')
   .then(res => res.json())
   .then(data => {
     const d = document.getElementById('products');
