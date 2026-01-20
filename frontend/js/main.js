@@ -1,27 +1,36 @@
 const API_URL = 'https://website-production-f869.up.railway.app/products';
 let allProducts = [];
 
-// ইউজার চেক
+// ১. প্রোফাইল হ্যান্ডেলার
 const user = localStorage.getItem('user');
+const authNav = document.getElementById('auth-nav');
+
 if (user) {
-    document.getElementById('auth-nav').innerHTML = `
-        <button onclick="localStorage.clear(); location.reload();" class="text-rose-500 font-bold uppercase text-[10px]">
-            <i class="fas fa-user-circle"></i> ${user}
-        </button>`;
+    // লগইন থাকলে "Your Profile" দেখাবে এবং প্রোফাইল পেজে লিঙ্ক করবে
+    authNav.innerHTML = `
+        <a href="profile.html" class="flex flex-col items-end group">
+            <span class="text-[9px] text-rose-500 uppercase tracking-tighter font-bold leading-none mb-1">Your Profile</span>
+            <div class="flex items-center gap-2 group-hover:text-rose-500 transition">
+                <span class="text-[13px] font-bold text-white">${user}</span>
+                <i class="fas fa-user-circle text-lg"></i>
+            </div>
+        </a>
+    `;
 }
 
-// প্রোডাক্ট ফেচ
+// ২. প্রোডাক্ট ডাটা ফেচ করা
 fetch(API_URL).then(res => res.json()).then(data => {
     allProducts = data;
     displayProducts(allProducts);
 });
 
+// ৩. প্রোডাক্ট ডিসপ্লে লজিক
 function displayProducts(products) {
     const container = document.getElementById('products-container');
     const countLabel = document.getElementById('item-count');
     
     container.innerHTML = '';
-    countLabel.innerText = `${products.length} items`;
+    countLabel.innerText = `${products.length} items`; // আইটেম সংখ্যা আপডেট
 
     products.forEach(p => {
         const discount = p.customDiscount || (p.oldPrice ? `-${Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%` : null);
@@ -48,6 +57,7 @@ function displayProducts(products) {
     });
 }
 
+// ৪. সার্চ ফাংশন
 function searchProducts() {
     const term = document.getElementById('search-input').value.toLowerCase();
     displayProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
