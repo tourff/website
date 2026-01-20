@@ -1,98 +1,101 @@
-const BASE_URL = 'https://website-production-f869.up.railway.app';
+const API_URL = 'https://website-production-f869.up.railway.app';
 
-// ১. ট্যাব সুইচিং লজিক
-function switchTab(tab) {
-    const addSection = document.getElementById('section-add');
-    const deleteSection = document.getElementById('section-delete');
-    const addBtn = document.getElementById('tab-add');
-    const deleteBtn = document.getElementById('tab-delete');
+// ১. প্রোডাক্ট পাবলিশ করার লজিক
+const productForm = document.getElementById('product-form');
+if (productForm) {
+    productForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            name: document.getElementById('name').value,
+            price: Number(document.getElementById('price').value),
+            oldPrice: Number(document.getElementById('oldPrice').value) || 0,
+            image: document.getElementById('image').value,
+            description: document.getElementById('description').value,
+            inStock: true
+        };
 
-    if (tab === 'add') {
-        addSection.style.display = 'block';
-        deleteSection.style.display = 'none';
-        addBtn.classList.add('tab-active');
-        addBtn.classList.remove('text-gray-500');
-        deleteBtn.classList.remove('tab-active');
-        deleteBtn.classList.add('text-gray-500');
-    } else {
-        addSection.style.display = 'none';
-        deleteSection.style.display = 'block';
-        deleteBtn.classList.add('tab-active');
-        deleteBtn.classList.remove('text-gray-500');
-        addBtn.classList.remove('tab-active');
-        addBtn.classList.add('text-gray-500');
-        loadProducts(); // ডিলিট ট্যাবে গেলে লিস্ট রিফ্রেশ হবে
-    }
-}
-
-// ২. লগইন ফাংশন
-function login() {
-    const pass = document.getElementById('password').value;
-    if (pass === 'admin123') {
-        document.getElementById('login-box').style.display = 'none';
-        document.getElementById('panel').style.display = 'block';
-        loadProducts();
-    } else {
-        alert("Access Denied! Wrong Password.");
-    }
-}
-
-// ৩. প্রোডাক্ট লোড করা
-async function loadProducts() {
-    const res = await fetch(`${BASE_URL}/products`);
-    const products = await res.json();
-    const list = document.getElementById('manage-list');
-    list.innerHTML = products.length === 0 ? '<p class="text-center opacity-40 py-10">No products available.</p>' : '';
-
-    products.forEach(p => {
-        list.innerHTML += `
-            <div class="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-2xl hover:border-rose-500/30 transition">
-                <div class="flex items-center gap-4">
-                    <img src="${p.image}" class="w-12 h-12 object-contain bg-black rounded-xl">
-                    <div>
-                        <p class="font-bold text-sm text-white">${p.name}</p>
-                        <p class="text-xs text-rose-500 font-bold">৳${p.price}</p>
-                    </div>
-                </div>
-                <button onclick="deleteProduct('${p._id}')" class="w-10 h-10 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition">
-                    <i class="fas fa-trash-alt text-xs"></i>
-                </button>
-            </div>`;
+        try {
+            const res = await fetch(`${API_URL}/admin/add-product`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                alert("Success: Product is now live!");
+                location.reload();
+            } else {
+                alert("Failed: Check your server logs.");
+            }
+        } catch (err) {
+            console.error("Connection error:", err);
+            alert("Error: Server not responding.");
+        }
     });
 }
 
-// ৪. প্রোডাক্ট ডিলিট করা
-async function deleteProduct(id) {
-    if (!confirm("Are you sure? This action cannot be undone.")) return;
+// ২. প্রোডাক্ট লিস্ট লোড ও ডিসপ্লে (forEach Error ফিক্স)
+async function loadAdminProducts() {
     try {
-        await fetch(`${BASE_URL}/admin/delete-product/${id}`, { method: 'DELETE' });
-        loadProducts(); // ডিলিট হওয়ার পর লিস্ট আপডেট
+        const res = await fetch(`${API_URL}/products`);
+        
+        if (!res.ok) throw new Error("Server error " + res.status);
+        
+        const products = await res.json();
+        const list = document.getElementById('admin-product-list');
+
+        // চেক করা যে products একটি অ্যারে কি না
+        if (Array.isArray(products) && list) {
+            list.innerHTML = products.length === 0 ? '<p class="text-gray-600 text-center text-xs">No products in shop.</p>' : '';
+            
+            products.forEach(p => {
+                list.innerHTML += `
+                    <div class="glass-box p-4 flex items-center justify-between gap-4 transition hover:border-white/20">
+                        <div class="flex items-center gap-4">
+                            <img src="${p.image}" class="w-12 h-12 object-contain bg-white/5 rounded-lg">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-200 uppercase truncate w-32 md:w-56">${p.name}</h4>
+                                <p class="text-rose-500 font-bold text-[10px]">৳${p.price}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleStock('${p._id}')" 
+                                    class="px-4 py-2 rounded-lg text-[9px] font-black uppercase transition ${p.inStock ? 'bg-green-600/10 text-green-500' : 'bg-gray-600/10 text-gray-500'}">
+                                ${p.inStock ? 'Stock In' : 'Out'}
+                            </button>
+                            <button onclick="deleteProduct('${p._id}')" 
+                                    class="p-3 bg-red-600/10 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            });
+        }
     } catch (err) {
-        alert("Error deleting product.");
+        console.error("Error loading products:", err);
+        const list = document.getElementById('admin-product-list');
+        if(list) list.innerHTML = '<p class="text-red-500 text-center text-[10px]">Database connection failed.</p>';
     }
 }
 
-// ৫. প্রোডাক্ট অ্যাড করা
-async function add() {
-    const data = {
-        name: document.getElementById('name').value,
-        price: document.getElementById('price').value,
-        oldPrice: document.getElementById('oldPrice').value,
-        customDiscount: document.getElementById('customDiscount').value,
-        description: document.getElementById('description').value,
-        image: document.getElementById('imgUrl').value
-    };
+// ৩. স্টক পরিবর্তন ফাংশন
+window.toggleStock = async function(id) {
+    try {
+        await fetch(`${API_URL}/admin/toggle-stock/${id}`, { method: 'PATCH' });
+        loadAdminProducts(); // পেজ রিলোড ছাড়া আপডেট
+    } catch (err) { console.error("Stock update failed"); }
+}
 
-    if (!data.name || !data.price || !data.image) return alert("Fill mandatory fields!");
-
-    const res = await fetch(`${BASE_URL}/admin/add-product`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-
-    if (res.ok) {
-        alert("Product Published Successfully!");
-        location.reload();
+// ৪. ডিলিট ফাংশন
+window.deleteProduct = async function(id) {
+    if (confirm("Delete this product permanently?")) {
+        try {
+            const res = await fetch(`${API_URL}/admin/delete-product/${id}`, { method: 'DELETE' });
+            if (res.ok) loadAdminProducts();
+        } catch (err) { alert("Delete failed!"); }
     }
 }
+
+// ইনিশিয়াল লোড
+loadAdminProducts();
