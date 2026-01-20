@@ -1,5 +1,6 @@
 const API_URL = 'https://website-production-f869.up.railway.app/products';
 let allProducts = [];
+let cart = []; // কার্ট ডাটা স্টোর করার জন্য
 
 // ১. প্রোফাইল হ্যান্ডেলার (Far Right Position)
 const user = localStorage.getItem('user');
@@ -7,7 +8,7 @@ const authNav = document.getElementById('auth-nav');
 
 if (user) {
     authNav.innerHTML = `
-        <a href="profile.html" class="flex flex-col items-end group cursor-pointer">
+        <a href="profile.html" class="flex flex-col items-end group">
             <span class="text-[9px] text-rose-500 uppercase font-black leading-none mb-1 tracking-tighter">Your Profile</span>
             <div class="flex items-center gap-2 group-hover:text-rose-500 transition">
                 <span class="text-[13px] font-bold text-white">${user}</span>
@@ -17,7 +18,22 @@ if (user) {
     `;
 }
 
-// ২. ব্যানার স্লাইডার লজিক
+// ২. কার্ট লজিক
+function addToCart(productId) {
+    const product = allProducts.find(p => p._id === productId);
+    if (product) {
+        cart.push(product);
+        updateCartUI();
+    }
+}
+
+function updateCartUI() {
+    const cartBtn = document.getElementById('main-cart-btn');
+    const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+    cartBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> ৳${totalPrice}`; // কার্ট বাটন আপডেট
+}
+
+// ৩. ব্যানার স্লাইডার
 let currentSlide = 0;
 const slider = document.getElementById('slider');
 const slides = slider.querySelectorAll('img');
@@ -30,15 +46,15 @@ function showSlide(index) {
 }
 function nextSlide() { showSlide(currentSlide + 1); }
 function prevSlide() { showSlide(currentSlide - 1); }
-setInterval(nextSlide, 5000); // অটো স্লাইড ৫ সেকেন্ড পর পর
+setInterval(nextSlide, 5000); // ৫ সেকেন্ড পর পর অটো স্লাইড
 
-// ৩. ডাটা লোড ও ডিসপ্লে
+// ৪. প্রোডাক্ট লোড ও ডিসপ্লে
 async function fetchProducts() {
     try {
         const res = await fetch(API_URL);
         allProducts = await res.json();
         displayProducts(allProducts);
-    } catch (err) { console.error("API Connection Failed"); }
+    } catch (err) { console.error("API Error"); }
 }
 
 function displayProducts(products) {
@@ -49,26 +65,32 @@ function displayProducts(products) {
 
     products.forEach(p => {
         const discount = p.customDiscount || (p.oldPrice ? `-${Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%` : null);
+        
         container.innerHTML += `
             <div class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent">
-                <div class="relative bg-gradient-to-b from-[#3a1a2e] to-transparent p-12 aspect-square flex items-center justify-center">
+                <div class="relative bg-gradient-to-b from-[#3a1a2e] to-transparent p-10 md:p-12 aspect-square flex items-center justify-center">
                     ${discount ? `<div class="absolute top-3 left-3 z-10 badge-rose text-[9px] font-black px-2 py-1">${discount}</div>` : ''}
                     <div class="absolute top-3 right-3 text-gray-600 text-[10px]"><i class="fas fa-heart"></i> 1</div>
                     <img src="${p.image}" class="w-full h-full object-contain z-10 group-hover:scale-110 transition duration-700">
                     <div class="absolute inset-5 bg-white/5 rounded-2xl border border-white/5 pointer-events-none"></div>
                 </div>
-                <div class="p-4 bg-[#130d1d]">
-                    <h3 class="text-[11px] font-bold text-gray-400 mb-1 truncate">${p.name}</h3>
-                    <div class="flex items-center gap-2">
-                        <span class="text-rose-500 font-black text-sm">৳${p.price}</span>
-                        ${p.oldPrice ? `<span class="text-[10px] text-gray-600 line-through">৳${p.oldPrice}</span>` : ''}
+                <div class="p-4 bg-[#130d1d] flex flex-col gap-3">
+                    <div>
+                        <h3 class="text-[11px] font-bold text-gray-400 mb-1 truncate">${p.name}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-rose-500 font-black text-sm">৳${p.price}</span>
+                            ${p.oldPrice ? `<span class="text-[10px] text-gray-600 line-through">৳${p.oldPrice}</span>` : ''}
+                        </div>
                     </div>
+                    <button onclick="addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">
+                        Add to Cart
+                    </button>
                 </div>
             </div>`;
     });
 }
 
-// ৪. ফিল্টার ও সার্চ লজিক
+// ৫. সর্টিং ও সার্চ
 function sortProducts() {
     const type = document.getElementById('sort-filter').value;
     let sorted = [...allProducts];
