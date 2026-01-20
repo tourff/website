@@ -7,28 +7,28 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ১. নিরাপদ কানেকশন লজিক
-const dbURI = process.env.MONGODB_URI || "";
+// নিরাপদ কানেকশন লজিক (স্পেস রিমুভারসহ)
+let dbURI = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : ""; 
 
 if (dbURI && dbURI.startsWith("mongodb")) {
     mongoose.connect(dbURI)
         .then(() => console.log('✅ Connected to MongoDB Successfully'))
         .catch(err => console.error('❌ Database Connection Failed:', err.message));
 } else {
-    console.error('❌ CRITICAL: Invalid MONGODB_URI in Railway Variables!');
+    console.error('❌ CRITICAL: MONGODB_URI is invalid or missing in Railway!');
 }
 
 const Product = mongoose.model('Product', new mongoose.Schema({
     name: String, price: Number, image: String, description: String, inStock: { type: Boolean, default: true }
 }));
 
-// ২. প্রোডাক্ট রুট (৫০০ এরর এবং ফর-ইচ এরর চিরতরে ফিক্স)
+// পাবলিক রুট (৫০০ এরর এবং ফর-ইচ এরর চিরতরে ফিক্স)
 app.get('/products', async (req, res) => {
     try {
         const products = await Product.find().lean();
         res.status(200).json(products || []); 
     } catch (err) {
-        res.status(200).json([]); // ডাটাবেজ এরর হলেও খালি লিস্ট পাঠাবে
+        res.status(200).json([]); // এরর হলেও খালি লিস্ট পাঠাবে যাতে সাইট না ভাঙে
     }
 });
 
