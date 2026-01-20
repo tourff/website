@@ -1,6 +1,6 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 const API_URL = `${BASE_URL}/products`;
-const WHATSAPP_NUMBER = '8801XXXXXXXXX'; // আপনার হোয়াটসঅ্যাপ নাম্বারটি এখানে দিন
+const WHATSAPP_NUMBER = '8801XXXXXXXXX'; // আপনার হোয়াটসঅ্যাপ নাম্বারটি এখানে দিন
 let allProducts = [];
 let cart = []; 
 
@@ -49,7 +49,6 @@ async function fetchBanners() {
         
         if (banners.length > 0) {
             slider.innerHTML = banners.map(b => `<img src="${b.imageUrl}" class="slider-img">`).join('');
-            // প্রথম ব্যানারের সেট করা টাইম অনুযায়ী অটো-প্লে শুরু হবে
             setInterval(nextSlide, banners[0].displayTime || 5000);
         }
     } catch (err) { console.error("Error fetching banners"); }
@@ -138,12 +137,17 @@ function displayProducts(products) {
     countLabel.innerText = `${products.length} items`;
     
     products.forEach(p => {
+        // ডিসকাউন্ট পার্সেন্টেজ ক্যালকুলেশন
+        const hasDiscount = p.oldPrice && p.oldPrice > p.price;
+        const discountPercentage = hasDiscount ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
+
         const actionBtn = p.inStock !== false 
             ? `<button onclick="addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">Add to Cart</button>`
             : `<button class="w-full bg-gray-800 text-gray-500 text-[10px] font-bold py-2 rounded-lg border border-white/5 cursor-not-allowed uppercase" disabled>Out of Stock</button>`;
 
         container.innerHTML += `
-            <div class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent">
+            <div class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent relative">
+                ${hasDiscount ? `<div class="absolute top-3 left-3 z-10 bg-rose-500 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg">-${discountPercentage}% OFF</div>` : ''}
                 <div class="relative bg-gradient-to-b from-[#3a1a2e] to-transparent p-10 md:p-12 aspect-square flex items-center justify-center">
                     <img src="${p.image}" class="w-full h-full object-contain z-10 group-hover:scale-110 transition duration-700">
                     <div class="absolute inset-5 bg-white/5 rounded-2xl border border-white/5 pointer-events-none"></div>
@@ -153,6 +157,7 @@ function displayProducts(products) {
                         <h3 class="text-[11px] font-bold text-gray-400 mb-1 truncate">${p.name}</h3>
                         <div class="flex items-center gap-2">
                             <span class="text-rose-500 font-black text-sm">৳${p.price}</span>
+                            ${hasDiscount ? `<span class="text-[10px] text-gray-600 line-through font-bold">৳${p.oldPrice}</span>` : ''}
                         </div>
                     </div>
                     ${actionBtn}
@@ -174,6 +179,6 @@ function searchProducts() {
     displayProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
 }
 
-// ইনিশিয়াল কল
+// ইনিশিয়াল কল
 fetchBanners();
 fetchProducts();
