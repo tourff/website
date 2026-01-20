@@ -1,124 +1,102 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 
-// ১. লগইন ফাংশন
+// ১. ট্যাব সুইচিং লজিক
+function showTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.remove('hidden');
+    document.getElementById('btn-' + tabId).classList.add('active');
+}
+
+// ২. স্ট্যাটাস মেসেজ দেখানোর ফাংশন
+function showMsg(msgId, text, isError = false) {
+    const el = document.getElementById(msgId);
+    el.innerText = text;
+    el.style.display = 'block';
+    el.style.backgroundColor = isError ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)';
+    el.style.color = isError ? '#ef4444' : '#22c55e';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ৩. লগইন ফাংশন
 function login() {
-    const password = document.getElementById('password').value;
-    if (password === 'admin123') {
-        alert("Login Success!");
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('admin-section').style.display = 'block';
-        loadAdminProducts();
-        loadAdminBanners(); // ব্যানার লিস্ট লোড করার জন্য
+    const pass = document.getElementById('password').value;
+    if (pass === 'admin123') {
+        showMsg('login-msg', 'Login Successful!');
+        setTimeout(() => {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('admin-section').style.display = 'block';
+            loadAdminProducts();
+            loadAdminBanners();
+        }, 1000);
     } else {
-        alert("Wrong Password!");
+        showMsg('login-msg', 'Incorrect Password!', true);
     }
 }
 
-// ২. প্রোডাক্ট অ্যাড করার ফাংশন
+// ৪. প্রোডাক্ট ম্যানেজমেন্ট
 async function addProduct() {
     const name = document.getElementById('name').value;
     const price = document.getElementById('price').value;
     const image = document.getElementById('imgUrl').value;
 
-    if (!name || !price || !image) return alert("Fill all fields!");
+    if(!name || !price || !image) return showMsg('action-msg', 'Fill all fields!', true);
 
-    try {
-        const response = await fetch(`${BASE_URL}/admin/add-product`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, price, image })
-        });
-        if (response.ok) {
-            alert("Product Added!");
-            loadAdminProducts();
-            document.getElementById('name').value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('imgUrl').value = '';
-        }
-    } catch (err) { console.error(err); }
-}
-
-// ৩. সব প্রোডাক্ট লিস্ট লোড করা
-async function loadAdminProducts() {
-    const list = document.getElementById('admin-product-list');
-    try {
-        const res = await fetch(`${BASE_URL}/products`);
-        const products = await res.json();
-        list.innerHTML = '';
-        products.forEach(p => {
-            list.innerHTML += `
-                <div class="flex items-center justify-between bg-gray-900 p-4 rounded-xl mb-2 border border-gray-800">
-                    <div class="flex items-center gap-4">
-                        <img src="${p.image}" class="w-10 h-10 object-contain">
-                        <div>
-                            <h4 class="text-sm font-bold text-white">${p.name}</h4>
-                            <p class="text-[10px] ${p.inStock ? 'text-green-500' : 'text-red-500'} font-bold uppercase">${p.inStock ? 'In Stock' : 'Out of Stock'}</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="toggleStock('${p._id}')" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-[10px] font-bold text-white transition">Stock</button>
-                        <button onclick="deleteProduct('${p._id}')" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-[10px] font-bold text-white transition">Delete</button>
-                    </div>
-                </div>`;
-        });
-    } catch (err) { console.error(err); }
-}
-
-// ৪. ব্যানার অ্যাড করার ফাংশন
-async function addBanner() {
-    const imageUrl = document.getElementById('bannerUrl').value;
-    const displayTime = document.getElementById('displayTime').value || 5000;
-
-    if (!imageUrl) return alert("Please provide a Banner URL");
-
-    try {
-        const response = await fetch(`${BASE_URL}/admin/add-banner`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl, displayTime })
-        });
-        if (response.ok) {
-            alert("Banner Added!");
-            loadAdminBanners();
-            document.getElementById('bannerUrl').value = '';
-            document.getElementById('displayTime').value = '';
-        }
-    } catch (err) { console.error(err); }
-}
-
-// ৫. সব ব্যানার লিস্ট লোড করা
-async function loadAdminBanners() {
-    const list = document.getElementById('admin-banner-list');
-    try {
-        const res = await fetch(`${BASE_URL}/banners`);
-        const banners = await res.json();
-        list.innerHTML = '';
-        banners.forEach(b => {
-            list.innerHTML += `
-                <div class="flex items-center justify-between bg-gray-900 p-3 rounded-xl mb-2 border border-gray-800">
-                    <img src="${b.imageUrl}" class="w-20 h-10 object-cover rounded">
-                    <button onclick="deleteBanner('${b._id}')" class="text-red-500 hover:text-red-400 text-xs font-bold uppercase px-2 py-1 transition">Remove</button>
-                </div>`;
-        });
-    } catch (err) { console.error(err); }
-}
-
-// ৬. প্রোডাক্ট ও ব্যানার ডিলিট এবং স্টক আপডেট ফাংশন
-async function deleteProduct(id) {
-    if (confirm("Are you sure?")) {
-        await fetch(`${BASE_URL}/admin/delete-product/${id}`, { method: 'DELETE' });
-        loadAdminProducts();
-    }
-}
-
-async function toggleStock(id) {
-    await fetch(`${BASE_URL}/admin/toggle-stock/${id}`, { method: 'PATCH' });
+    await fetch(`${BASE_URL}/admin/add-product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, price, image })
+    });
+    showMsg('action-msg', 'Product Published!');
     loadAdminProducts();
 }
 
-async function deleteBanner(id) {
-    if (confirm("Remove this Banner?")) {
-        await fetch(`${BASE_URL}/admin/delete-banner/${id}`, { method: 'DELETE' });
-        loadAdminBanners();
-    }
+async function loadAdminProducts() {
+    const res = await fetch(`${BASE_URL}/products`);
+    const products = await res.json();
+    const list = document.getElementById('admin-product-list');
+    list.innerHTML = products.map(p => `
+        <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+            <div class="flex items-center gap-3">
+                <img src="${p.image}" class="w-8 h-8 object-contain">
+                <div>
+                    <p class="text-[11px] font-bold truncate w-24">${p.name}</p>
+                    <p class="text-[9px] ${p.inStock ? 'text-green-500' : 'text-red-500'} uppercase font-black">${p.inStock ? 'In Stock' : 'Out of Stock'}</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleStock('${p._id}')" class="text-blue-500 hover:bg-blue-500/10 p-2 rounded-lg transition"><i class="fas fa-sync-alt text-[10px]"></i></button>
+                <button onclick="deleteProduct('${p._id}')" class="text-rose-500 hover:bg-rose-500/10 p-2 rounded-lg transition"><i class="fas fa-trash-alt text-[10px]"></i></button>
+            </div>
+        </div>`).join('');
 }
+
+// ৫. ব্যানার ম্যানেজমেন্ট
+async function addBanner() {
+    const imageUrl = document.getElementById('bannerUrl').value;
+    const displayTime = document.getElementById('displayTime').value;
+    if(!imageUrl) return showMsg('action-msg', 'Banner URL required!', true);
+
+    await fetch(`${BASE_URL}/admin/add-banner`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl, displayTime })
+    });
+    showMsg('action-msg', 'Banner Saved!');
+    loadAdminBanners();
+}
+
+async function loadAdminBanners() {
+    const res = await fetch(`${BASE_URL}/banners`);
+    const banners = await res.json();
+    const list = document.getElementById('admin-banner-list');
+    list.innerHTML = banners.map(b => `
+        <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+            <img src="${b.imageUrl}" class="h-10 w-20 object-cover rounded-lg">
+            <button onclick="deleteBanner('${b._id}')" class="text-rose-500 hover:bg-rose-500/10 p-2 rounded-lg transition"><i class="fas fa-times text-xs"></i></button>
+        </div>`).join('');
+}
+
+async function deleteProduct(id) { if(confirm("Delete Product?")) { await fetch(`${BASE_URL}/admin/delete-product/${id}`, {method: 'DELETE'}); loadAdminProducts(); } }
+async function toggleStock(id) { await fetch(`${BASE_URL}/admin/toggle-stock/${id}`, {method: 'PATCH'}); loadAdminProducts(); }
+async function deleteBanner(id) { if(confirm("Remove Banner?")) { await fetch(`${BASE_URL}/admin/delete-banner/${id}`, {method: 'DELETE'}); loadAdminBanners(); } }
