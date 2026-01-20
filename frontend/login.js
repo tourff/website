@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Turjo Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d0915; color: white; display: flex; align-items: center; justify-content: center; min-height: screen; }
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .btn-gradient { background: linear-gradient(90deg, #9333ea, #db2777); }
+    </style>
+</head>
+<body class="min-h-screen bg-[#0d0915]">
+
+    <div class="w-full max-w-md p-6">
+        <div class="glass-card rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent"></div>
+            
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-black uppercase tracking-tighter">Welcome Back</h2>
+                <p class="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-2 font-bold">Access your premium account</p>
+            </div>
+
+            <div id="msg" class="hidden mb-6 p-4 rounded-xl text-xs font-bold text-center"></div>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
+                    <input id="email" type="email" placeholder="example@mail.com" class="w-full bg-white/5 border border-white/5 p-4 rounded-2xl outline-none focus:border-rose-500 transition mt-2">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Password</label>
+                    <input id="password" type="password" placeholder="••••••••" class="w-full bg-white/5 border border-white/5 p-4 rounded-2xl outline-none focus:border-rose-500 transition mt-2">
+                </div>
+
+                <button onclick="handleLogin()" class="w-full btn-gradient py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-pink-900/20 active:scale-95 transition mt-4">
+                    Sign In
+                </button>
+
+                <p class="text-[11px] text-center text-gray-500 mt-8">
+                    New here? <a href="signup.html" class="text-rose-500 font-bold hover:underline">Create an account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://website-production-f869.up.railway.app';
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch(`${BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // ব্রাউজারে ডাটা সেভ করা
+                    localStorage.setItem('userName', data.user.name);
+                    localStorage.setItem('userEmail', data.user.email);
+                    
+                    showMsg("Login Successful!", false);
+                    setTimeout(() => window.location.href = 'index.html', 1000);
+                } else {
+                    showMsg(data.message, true);
+                }
+            } catch (err) {
+                showMsg("Server error", true);
+            }
+        }
+
+        function showMsg(text, isError) {
+            const msgEl = document.getElementById('msg');
+            msgEl.innerText = text;
+            msgEl.className = `mb-6 p-4 rounded-xl text-xs font-bold text-center block ${isError ? 'bg-rose-500/10 text-rose-500' : 'bg-green-500/10 text-green-500'}`;
+        }
+    </script>
+</body>
+</html>
