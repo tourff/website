@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turjo Site | Digital Store</title>
+    <title>Turjo Site | Premium Digital Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -14,24 +14,26 @@
         .card-bg { background: #161021; border: 1px solid #251d33; }
         .badge-rose { background: #f43f5e; color: white; border-radius: 4px; }
         .cart-btn { background: linear-gradient(90deg, #9333ea, #db2777); }
+        select { background-image: none; }
     </style>
 </head>
 <body>
 
     <nav class="nav-bg sticky top-0 z-50 py-3">
         <div class="container mx-auto px-4 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-2 shrink-0">
+            
+            <div class="flex items-center gap-2 shrink-0 cursor-pointer transition active:scale-95" onclick="window.location.reload()">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                    <i class="fas fa-box-open text-black text-xl"></i>
+                    <i class="fas fa-bolt text-black text-xl"></i>
                 </div>
                 <div class="hidden md:block">
                     <h1 class="font-bold text-lg leading-tight uppercase tracking-tighter">Turjo Site</h1>
-                    <p class="text-[9px] text-gray-500 uppercase tracking-widest">Digital Products</p>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest">Premium Store</p>
                 </div>
             </div>
 
             <div class="flex-1 max-w-xl relative hidden md:block">
-                <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for ChatGPT Plus, Canva Pro, VPN..." 
+                <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for ChatGPT, Canva, Subscriptions..." 
                     class="w-full search-box py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition text-white">
                 <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-500 text-xs"></i>
             </div>
@@ -41,29 +43,34 @@
                     <i class="fas fa-headset"></i> Support
                 </a>
                 
-                <div id="auth-nav">
-                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500">
-                        <i class="far fa-user"></i> Login
-                    </a>
-                </div>
-
-                <div class="hidden sm:flex items-center gap-1 border-l border-white/10 pl-4 text-gray-400">৳ BDT <i class="fas fa-chevron-down text-[8px] ml-1"></i></div>
-                
                 <button class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20 text-white">
                     <i class="fas fa-shopping-cart"></i> ৳0
                 </button>
+
+                <div id="auth-nav" class="border-l border-white/10 pl-4">
+                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition">
+                        <i class="far fa-user text-lg"></i> Login
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
     <main class="container mx-auto px-4 py-10">
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
                 <h2 class="text-2xl font-bold uppercase tracking-tight">All Products</h2>
                 <p id="item-count" class="text-xs text-gray-500 mt-1">0 items</p>
             </div>
-            <div class="bg-[#161021] border border-[#251d33] p-2 px-4 rounded-lg text-xs cursor-pointer flex items-center gap-2">
-                Default <i class="fas fa-chevron-down text-[8px] text-gray-500"></i>
+            
+            <div class="relative min-w-[180px]">
+                <select id="sort-filter" onchange="sortProducts()" 
+                    class="w-full bg-[#161021] border border-[#251d33] p-2.5 px-4 rounded-lg text-xs cursor-pointer outline-none appearance-none text-gray-300 hover:border-rose-500 transition">
+                    <option value="default">Default Sorting</option>
+                    <option value="low-high">Price: Lowest to Highest</option>
+                    <option value="high-low">Price: Highest to Lowest</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-3.5 text-[8px] text-gray-500 pointer-events-none"></i>
             </div>
         </div>
 
