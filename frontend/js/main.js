@@ -1,30 +1,32 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 const API_URL = `${BASE_URL}/products`;
-const WHATSAPP_NUMBER = '8801847853867'; // আপনার হোয়াটসঅ্যাপ নাম্বারটি এখানে দিন
+const WHATSAPP_NUMBER = '8801847853867'; 
 let allProducts = [];
 let cart = []; 
 
-// ১. প্রোফাইল ও ইউজার হ্যান্ডেলার
-const user = localStorage.getItem('user');
+// ১. প্রোফাইল ও ইউজার হ্যান্ডেলার (LocalStorage থেকে ডাটা রিড করা)
+const userName = localStorage.getItem('userName');
+const userEmail = localStorage.getItem('userEmail');
 const authNav = document.getElementById('auth-nav');
 
-if (user) {
+if (userName) {
     authNav.innerHTML = `
         <div class="relative">
             <button onclick="toggleProfile()" class="flex flex-col items-end group">
                 <span class="text-[9px] text-rose-500 uppercase font-black leading-none mb-1 tracking-tighter">Your Profile</span>
                 <div class="flex items-center gap-2 group-hover:text-rose-500 transition">
-                    <span class="text-[13px] font-bold text-white">${user}</span>
+                    <span class="text-[13px] font-bold text-white">${userName}</span>
                     <i class="fas fa-user-circle text-xl"></i>
                 </div>
             </button>
             <div id="profile-card" class="profile-dropdown">
                 <div class="text-center border-b border-white/5 pb-3 mb-3">
-                    <p class="text-xs font-bold text-white">${user}</p>
+                    <p class="text-xs font-bold text-white">${userName}</p>
+                    <p class="text-[9px] text-gray-500 truncate">${userEmail}</p>
                 </div>
                 <div class="flex flex-col gap-2">
                     <a href="profile.html" class="text-[10px] hover:text-rose-500 transition"><i class="fas fa-user mr-2"></i> Dashboard</a>
-                    <button onclick="logout()" class="text-[10px] text-left text-red-500 hover:text-red-400 transition"><i class="fas fa-sign-out-alt mr-2"></i> Logout</button>
+                    <button onclick="handleLogout()" class="text-[10px] text-left text-red-500 hover:text-red-400 transition"><i class="fas fa-sign-out-alt mr-2"></i> Logout</button>
                 </div>
             </div>
         </div>`;
@@ -35,9 +37,11 @@ function toggleProfile() {
     if(card) card.classList.toggle('active');
 }
 
-function logout() {
-    localStorage.removeItem('user');
-    window.location.reload();
+function handleLogout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.clear();
+        window.location.reload();
+    }
 }
 
 // ২. ডাইনামিক ব্যানার ফেচ লজিক
@@ -54,7 +58,7 @@ async function fetchBanners() {
     } catch (err) { console.error("Error fetching banners"); }
 }
 
-// ৩. কার্ট ও চেকআউট লজিক
+// ৩. কার্ট ও ডাটাবেজ চেকআউট লজিক (আপডেটেড)
 function toggleCart() {
     const sidebar = document.getElementById('cart-sidebar');
     const overlay = document.getElementById('cart-overlay');
@@ -94,13 +98,52 @@ function updateCartUI() {
 
 function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
 
-function checkout() {
+// মূল চেকআউট ফাংশন - ডাটাবেজে অর্ডার সেভ করা
+async function checkout() {
+    if (!userName) {
+        alert("Please login first to place an order!");
+        window.location.href = 'login.html';
+        return;
+    }
+
     if (cart.length === 0) return alert("Your cart is empty!");
-    let message = `*--- NEW ORDER (Turjo Site) ---*\n👤 *Customer:* ${user || 'Guest'}\n\n📦 *Items:* \n`;
-    cart.forEach((item, i) => { message += `${i + 1}. ${item.name} - ৳${item.price}\n`; });
-    const total = cart.reduce((sum, item) => sum + item.price, 0);
-    message += `\n💰 *Total Amount:* ৳${total}\n\n_Please process my order!_`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+
+    const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+
+    const orderData = {
+        userName,
+        userEmail,
+        products: cart,
+        totalAmount
+    };
+
+    try {
+        // ১. ডাটাবেজে অর্ডার সেভ করা
+        const res = await fetch(`${BASE_URL}/admin/place-order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        if (res.ok) {
+            // ২. হোয়াটসঅ্যাপ মেসেজ তৈরি ও পাঠানো
+            let message = `*--- NEW ORDER (Turjo Site) ---*\n👤 *Customer:* ${userName}\n📧 *Email:* ${userEmail}\n\n📦 *Items:* \n`;
+            cart.forEach((item, i) => { message += `${i + 1}. ${item.name} - ৳${item.price}\n`; });
+            message += `\n💰 *Total Amount:* ৳${totalAmount}\n\n_I have placed my order on the website._`;
+            
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+            
+            alert("Order saved in database and redirecting to WhatsApp!");
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        } else {
+            alert("Failed to save order in database!");
+        }
+    } catch (err) {
+        console.error("Order processing error:", err);
+        alert("Server error while placing order!");
+    }
 }
 
 // ৪. স্লাইডার কন্ট্রোল
@@ -108,7 +151,7 @@ let currentSlide = 0;
 function nextSlide() {
     const slider = document.getElementById('slider');
     const slides = slider.querySelectorAll('img');
-    if (slides.length === 0) return;
+    if (!slides || slides.length === 0) return;
     currentSlide = (currentSlide + 1) % slides.length;
     slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
@@ -116,7 +159,7 @@ function nextSlide() {
 function prevSlide() {
     const slider = document.getElementById('slider');
     const slides = slider.querySelectorAll('img');
-    if (slides.length === 0) return;
+    if (!slides || slides.length === 0) return;
     currentSlide = (currentSlide - 1 + slides.length) % slides.length;
     slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
@@ -133,11 +176,11 @@ async function fetchProducts() {
 function displayProducts(products) {
     const container = document.getElementById('products-container');
     const countLabel = document.getElementById('item-count');
+    if(!container) return;
     container.innerHTML = '';
-    countLabel.innerText = `${products.length} items`;
+    countLabel.innerText = `${products.length} items available`;
     
     products.forEach(p => {
-        // ডিসকাউন্ট পার্সেন্টেজ ক্যালকুলেশন
         const hasDiscount = p.oldPrice && p.oldPrice > p.price;
         const discountPercentage = hasDiscount ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
 
@@ -145,7 +188,6 @@ function displayProducts(products) {
             ? `<button onclick="event.stopPropagation(); addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">Add to Cart</button>`
             : `<button class="w-full bg-gray-800 text-gray-500 text-[10px] font-bold py-2 rounded-lg border border-white/5 cursor-not-allowed uppercase" disabled>Out of Stock</button>`;
 
-        // কার্ডে ক্লিক করলে product.html এ যাবে
         container.innerHTML += `
             <div onclick="window.location.href='product.html?id=${p._id}'" class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent relative cursor-pointer">
                 ${hasDiscount ? `<div class="absolute top-3 left-3 z-10 bg-rose-500 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg">-${discountPercentage}% OFF</div>` : ''}
