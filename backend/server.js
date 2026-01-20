@@ -7,10 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ১. ডাটাবেজ কানেকশন চেক
+// ১. ডাটাবেজ কানেকশন
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB Connected Successfully'))
-    .catch(err => console.error('❌ Connection Failed:', err.message));
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.error('❌ Connection Error:', err));
 
 // ২. প্রোডাক্ট মডেল
 const productSchema = new mongoose.Schema({
@@ -23,7 +23,7 @@ const productSchema = new mongoose.Schema({
 });
 const Product = mongoose.model('Product', productSchema);
 
-// ৩. পাবলিক রুট: সব প্রোডাক্ট পাওয়া (৫০০ এরর ফিক্স)
+// ৩. পাবলিক রুট: সব প্রোডাক্ট (৫০০ এরর হ্যান্ডলিং সহ)
 app.get('/products', async (req, res) => {
     try {
         const products = await Product.find() || [];
@@ -38,9 +38,9 @@ app.post('/admin/add-product', async (req, res) => {
     try {
         const newProduct = new Product(req.body);
         await newProduct.save();
-        res.status(201).json({ success: true, message: "Published!" });
+        res.status(201).json({ success: true });
     } catch (err) {
-        res.status(400).json({ success: false, message: "Publish Failed" });
+        res.status(400).json({ success: false });
     }
 });
 
