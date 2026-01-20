@@ -5,15 +5,28 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+  .catch(err => console.error("MongoDB connection error:", err));
 
-app.use('/products', require('./routes/products'));
-app.use('/admin', require('./routes/admin'));
+// Import Routes
+const productRoutes = require('./routes/products');
+const adminRoutes = require('./routes/admin');
+
+// Routes Middleware
+app.use('/products', productRoutes);
+app.use('/admin', adminRoutes);
+
+// Root Route (for testing)
+app.get('/', (req, res) => {
+    res.send("Server is running...");
+});
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running on " + PORT));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
