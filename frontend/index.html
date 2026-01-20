@@ -42,36 +42,26 @@
 
     <nav class="nav-bg sticky top-0 z-50 py-3">
         <div class="container mx-auto px-4 flex items-center justify-between gap-4">
-            
             <div class="flex items-center gap-2 shrink-0 cursor-pointer active:scale-95 transition" onclick="window.location.reload()">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                    <i class="fas fa-bolt text-black text-xl"></i>
-                </div>
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg"><i class="fas fa-bolt text-black text-xl"></i></div>
                 <div class="hidden md:block">
                     <h1 class="font-bold text-lg leading-tight uppercase tracking-tighter">Turjo Site</h1>
                     <p class="text-[9px] text-gray-500 uppercase tracking-widest">Premium Store</p>
                 </div>
             </div>
 
-            <div class="flex-1 max-w-xl relative hidden md:block group">
-                <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for ChatGPT, Canva, Netflix..." 
-                    class="w-full search-box py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition text-white">
+            <div class="flex-1 max-w-xl relative hidden md:block">
+                <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for ChatGPT, Canva, Netflix..." class="w-full search-box py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition text-white">
                 <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-500 text-xs"></i>
             </div>
 
             <div class="flex items-center gap-4 text-xs font-semibold">
-                <a href="#" class="hidden lg:flex items-center gap-2 hover:text-rose-500 transition">
-                    <i class="fas fa-headset"></i> Support
-                </a>
-                
+                <a href="#" class="hidden lg:flex items-center gap-2 hover:text-rose-500 transition"><i class="fas fa-headset"></i> Support</a>
                 <button onclick="toggleCart()" class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20 text-white transition active:scale-95">
                     <i class="fas fa-shopping-cart"></i> <span id="cart-count-btn">৳0</span>
                 </button>
-
                 <div id="auth-nav" class="border-l border-white/10 pl-4">
-                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition">
-                        <i class="far fa-user text-lg"></i> Login
-                    </a>
+                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500"><i class="far fa-user text-lg"></i> Login</a>
                 </div>
             </div>
         </div>
@@ -90,14 +80,9 @@
 
     <main class="container mx-auto px-4 py-10">
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
-            <div>
-                <h2 class="text-2xl font-bold uppercase tracking-tight">All Products</h2>
-                <p id="item-count" class="text-xs text-gray-500 mt-1">0 items</p>
-            </div>
-            
+            <div><h2 class="text-2xl font-bold uppercase tracking-tight">All Products</h2><p id="item-count" class="text-xs text-gray-500 mt-1">0 items</p></div>
             <div class="relative min-w-[200px]">
-                <select id="sort-filter" onchange="sortProducts()" 
-                    class="w-full bg-[#161021] border border-[#251d33] p-3 px-5 rounded-xl text-xs cursor-pointer outline-none appearance-none text-gray-300 hover:border-rose-500 transition">
+                <select id="sort-filter" onchange="sortProducts()" class="w-full bg-[#161021] border border-[#251d33] p-3 px-5 rounded-xl text-xs cursor-pointer outline-none appearance-none text-gray-300 hover:border-rose-500 transition">
                     <option value="default">Default Sorting</option>
                     <option value="low-high">Price: Lowest to Highest</option>
                     <option value="high-low">Price: Highest to Lowest</option>
@@ -105,9 +90,7 @@
                 <i class="fas fa-chevron-down absolute right-4 top-4 text-[8px] text-gray-500 pointer-events-none"></i>
             </div>
         </div>
-
-        <div id="products-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
-            </div>
+        <div id="products-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8"></div>
     </main>
 
     <div class="fixed bottom-8 right-8 flex flex-col gap-4 z-50">
