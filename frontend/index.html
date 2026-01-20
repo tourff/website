@@ -12,52 +12,34 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s ease; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
         .dark body { background-color: #030712; color: #f3f4f6; }
         .light body { background-color: #f9fafb; color: #111827; }
-        .btn-primary { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); transition: transform 0.2s; }
-        .btn-primary:hover { transform: scale(1.05); }
-        .glass-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .btn-primary { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
     </style>
 </head>
 <body>
-
     <nav class="sticky top-0 z-50 backdrop-blur-md dark:bg-[#030712]/80 dark:border-b dark:border-white/5 light:bg-white/80 light:border-b light:border-gray-200">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="w-10 h-10 btn-primary rounded-xl flex items-center justify-center">
-                    <i class="fas fa-bolt text-white"></i>
-                </div>
-                <span class="text-2xl font-extrabold tracking-tighter dark:text-white light:text-gray-900 uppercase">Turjo<span class="text-rose-500">Site</span></span>
+                <div class="w-10 h-10 btn-primary rounded-xl flex items-center justify-center"><i class="fas fa-bolt text-white"></i></div>
+                <span class="text-xl font-extrabold tracking-tighter dark:text-white light:text-gray-900 uppercase">TURJO SITE</span>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="toggleTheme()" class="bg-gray-500/10 p-3 rounded-full hover:bg-rose-500/20 transition">
-                    <i id="theme-icon" class="fas fa-moon text-rose-500 text-lg"></i>
-                </button>
+            <div id="nav-auth" class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="bg-gray-500/10 p-2.5 rounded-full"><i id="theme-icon" class="fas fa-moon text-rose-500"></i></button>
             </div>
         </div>
     </nav>
 
-    <header class="py-16 px-6 text-center">
-        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight dark:text-white light:text-gray-900">
-            Premium <span class="text-rose-500">Digital</span> Services
-        </h1>
-        <p class="max-w-2xl mx-auto dark:text-gray-400 light:text-gray-600 text-lg">
-            Instant delivery on game top-ups, premium subscriptions, and verified digital accounts.
-        </p>
-    </header>
-
-    <div class="container mx-auto px-6 mb-12">
-        <div class="max-w-3xl mx-auto relative group">
-            <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search products (e.g. Netflix, Free Fire)..." 
-                class="w-full py-5 px-14 rounded-3xl border transition-all outline-none dark:bg-white/5 dark:border-white/10 dark:text-white dark:focus:border-rose-500 light:bg-white light:border-gray-200 light:text-gray-900 light:focus:border-rose-500 shadow-2xl text-lg">
-            <i class="fas fa-search absolute left-6 top-6 text-gray-500 text-xl group-focus-within:text-rose-500"></i>
+    <div class="container mx-auto px-6 pt-10">
+        <div class="max-w-2xl mx-auto relative">
+            <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search services..." class="w-full py-4 px-12 rounded-2xl border outline-none dark:bg-white/5 dark:border-white/10 dark:text-white light:bg-white light:border-gray-200 light:text-gray-900 shadow-xl">
+            <i class="fas fa-search absolute left-5 top-5 text-gray-500"></i>
         </div>
     </div>
 
-    <main class="container mx-auto px-6 pb-20">
-        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-            </div>
+    <main class="container mx-auto px-6 py-12">
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
     </main>
 
     <script src="js/main.js"></script>
@@ -66,19 +48,11 @@
             const html = document.documentElement;
             const icon = document.getElementById('theme-icon');
             if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                icon.className = 'fas fa-sun text-rose-500 text-lg';
-                localStorage.setItem('theme', 'light');
+                html.classList.remove('dark'); icon.classList.replace('fa-moon', 'fa-sun'); localStorage.setItem('theme', 'light');
             } else {
-                html.classList.add('dark');
-                icon.className = 'fas fa-moon text-rose-500 text-lg';
-                localStorage.setItem('theme', 'dark');
+                html.classList.add('dark'); icon.classList.replace('fa-sun', 'fa-moon'); localStorage.setItem('theme', 'dark');
             }
         }
-        window.addEventListener('DOMContentLoaded', () => {
-            const icon = document.getElementById('theme-icon');
-            if (localStorage.getItem('theme') === 'light') icon.className = 'fas fa-sun text-rose-500 text-lg';
-        });
     </script>
 </body>
 </html>
