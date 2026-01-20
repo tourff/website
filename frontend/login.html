@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Premium Access | Turjo Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-[#030712] flex items-center justify-center min-h-screen p-6 text-white">
+    <div class="bg-white/5 backdrop-blur-2xl p-10 rounded-[2.5rem] w-full max-w-md border border-white/10 shadow-2xl">
+        <h2 id="title" class="text-4xl font-black mb-10 text-center text-rose-500 uppercase italic">Login</h2>
+        <div id="reg-fields" style="display:none;"><input id="user" placeholder="Full Name" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl mb-4 outline-none focus:border-rose-500"></div>
+        <input id="email" type="email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl mb-4 outline-none focus:border-rose-500">
+        <input id="pass" type="password" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl mb-8 outline-none focus:border-rose-500">
+        <button onclick="handleAuth()" class="w-full bg-rose-600 p-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-rose-900/20">Submit</button>
+        <p class="text-center mt-8 text-sm text-gray-500">Switch? <button onclick="toggle()" class="text-rose-500 font-bold ml-1">Click Here</button></p>
+    </div>
+    <script>
+        let isLogin = true;
+        const BASE = 'https://website-production-f869.up.railway.app';
+        function toggle() { isLogin = !isLogin; document.getElementById('title').innerText = isLogin ? 'Login' : 'Register'; document.getElementById('reg-fields').style.display = isLogin ? 'none' : 'block'; }
+        async function handleAuth() {
+            const body = isLogin ? { email: email.value, password: pass.value } : { username: user.value, email: email.value, password: pass.value };
+            const res = await fetch(BASE + (isLogin ? '/login' : '/register'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const data = await res.json();
+            if (res.ok) {
+                if (isLogin) {
+                    localStorage.setItem('user', data.username);
+                    localStorage.setItem('token', data.token);
+                    Swal.fire({ icon: 'success', title: 'Welcome!', text: data.username, timer: 1500, showConfirmButton: false });
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                } else { Swal.fire({ icon: 'success', title: 'Done!', text: 'Login now' }); toggle(); }
+            } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message }); }
+        }
+    </script>
+</body>
+</html>
