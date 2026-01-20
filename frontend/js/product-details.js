@@ -46,7 +46,7 @@ function generateStars(rating) {
     return stars;
 }
 
-// ৪. মেইন লোডার লজিক
+// ৪. মেইন লোডার লজিক (ফিক্সড ডেসক্রিপশন লজিক)
 async function loadProductDetails() {
     if (!productId) return window.location.href = 'index.html';
 
@@ -62,7 +62,14 @@ async function loadProductDetails() {
             if(currentProduct.oldPrice) document.getElementById('p-old-price').innerText = `৳${currentProduct.oldPrice}`;
             
             document.getElementById('p-image').src = currentProduct.image;
-            document.getElementById('p-desc-content').innerText = currentProduct.description || "Premium service with instant delivery and priority support.";
+
+            // --- ডেসক্রিপশন ফিক্স ---
+            // ডাটাবেজে ডেসক্রিপশন থাকলে সেটি দেখাবে, না থাকলে ডিফল্ট লেখা দেখাবে
+            document.getElementById('p-desc-content').innerText = currentProduct.description && currentProduct.description.trim() !== "" 
+                ? currentProduct.description 
+                : "Premium service with instant delivery and priority support.";
+            // ---------------------
+
             document.getElementById('p-sold').innerText = `${currentProduct.soldCount || 0}+`;
             document.getElementById('p-rating-stat').innerText = currentProduct.ratings || "5.0";
             document.getElementById('p-stars').innerHTML = generateStars(currentProduct.ratings || 5);
@@ -108,7 +115,7 @@ function loadReviews() {
     }
 }
 
-// ৬. হোয়াটসঅ্যাপ অর্ডার লজিক
+// ৬. হোয়াটসঅ্যাপ অর্ডার লজিক
 function buyViaWhatsApp() {
     const total = currentProduct.price * quantity;
     const msg = `*--- NEW ORDER ---*\n📦 *Product:* ${currentProduct.name}\n🔢 *Quantity:* ${quantity}\n💰 *Total:* ৳${total}\n\n_I want to purchase this item!_`;
@@ -119,4 +126,5 @@ function handleAddToCart() {
     alert(`${quantity} unit(s) of ${currentProduct.name} added to cart!`);
 }
 
+// মেইন ফাংশন কল
 loadProductDetails();
