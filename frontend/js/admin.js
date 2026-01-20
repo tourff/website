@@ -1,104 +1,132 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
+const ADMIN_PASS = "turjo0424";
+let revenueChartInstance = null;
 
-// ১. ড্যাশবোর্ড ডাটা ফেচ করা
-async function loadDashboard() {
-    try {
-        const [pRes, oRes] = await Promise.all([
-            fetch(`${BASE_URL}/products`),
-            fetch(`${BASE_URL}/orders`)
-        ]);
+// এডমিন এক্সেস চেক
+window.onload = () => {
+    const auth = localStorage.getItem('adminAuth');
+    if (auth !== ADMIN_PASS) {
+        const input = prompt("Enter Admin Password:");
+        if (input === ADMIN_PASS) {
+            localStorage.setItem('adminAuth', ADMIN_PASS);
+            initAdmin();
+        } else {
+            window.location.href = 'index.html';
+        }
+    } else {
+        initAdmin();
+    }
+};
 
-        const products = await pRes.json();
-        const orders = await oRes.json();
+async function initAdmin() {
+    document.getElementById('admin-main-content').classList.remove('hidden');
+    await refreshData();
+}
 
-        updateUI(products, orders);
-    } catch (err) {
-        console.error("Dashboard Load Error:", err);
+async function refreshData() {
+    const [pRes, oRes] = await Promise.all([
+        fetch(`${BASE_URL}/products`),
+        fetch(`${BASE_URL}/orders`)
+    ]);
+    const products = await pRes.json();
+    const orders = await oRes.json();
+    
+    updateStats(products, orders);
+    renderProductTable(products);
+}
+
+// সেকশন সুইচিং লজিক (ভিডিওর মতো)
+function showSection(sec) {
+    document.getElementById('dashboard-sec').classList.add('hidden');
+    document.getElementById('products-sec').classList.add('hidden');
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+
+    if(sec === 'dashboard') {
+        document.getElementById('dashboard-sec').classList.remove('hidden');
+        document.getElementById('m-dashboard').classList.add('active');
+    } else if(sec === 'products') {
+        document.getElementById('products-sec').classList.remove('hidden');
+        document.getElementById('m-products').classList.add('active');
     }
 }
 
-// ২. ইন্টারফেস আপডেট করা
-function updateUI(products, orders) {
-    // স্ট্যাটাস কার্ডস আপডেট
-    document.getElementById('product-count').innerText = products.length; //
-    document.getElementById('order-count').innerText = orders.length; //
+// প্রোডাক্ট টেবিল রেন্ডার
+function renderProductTable(products) {
+    const container = document.getElementById('full-product-list');
+    container.innerHTML = products.map(p => `
+        <tr class="border-b border-white/5 hover:bg-white/5 transition">
+            <td class="p-6 flex items-center gap-4">
+                <img src="${p.image}" class="w-10 h-10 object-contain bg-white/5 rounded-lg">
+                <span class="font-bold text-xs">${p.name}</span>
+            </td>
+            <td class="p-6 text-xs font-bold text-rose-500">৳${p.price}</td>
+            <td class="p-6 text-xs text-gray-500">${p.stockQuantity}</td>
+            <td class="p-6 text-right">
+                <button onclick="deleteProduct('${p._id}')" class="text-gray-600 hover:text-rose-500 transition mx-2"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
 
-    // মোট ইনকাম ক্যালকুলেশন
-    const revenue = orders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
-    document.getElementById('total-revenue').innerText = `৳${revenue.toLocaleString()}`; //
+// প্রোডাক্ট ডিলিট ফাংশন
+async function deleteProduct(id) {
+    if(confirm("Delete this product?")) {
+        await fetch(`${BASE_URL}/admin/delete-product/${id}`, { method: 'DELETE' });
+        refreshData();
+    }
+}
 
-    // আজকের ইনকাম
-    const today = new Date().toLocaleDateString();
-    const todayOrders = orders.filter(o => new Date(o.orderedAt).toLocaleDateString() === today);
-    const todayRevenue = todayOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
-    document.getElementById('today-sales').innerText = `৳${todayRevenue.toLocaleString()}`; //
+// নতুন প্রোডাক্ট সেভ করা
+document.getElementById('add-product-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const newP = {
+        name: document.getElementById('add-name').value,
+        price: Number(document.getElementById('add-price').value),
+        oldPrice: Number(document.getElementById('add-oldPrice').value),
+        image: document.getElementById('add-image').value,
+        description: document.getElementById('add-desc').value
+    };
 
-    // অর্ডার লিস্ট (ভিডিওর মতো স্টাইলিশ)
-    const list = document.getElementById('orders-list');
-    list.innerHTML = orders.slice(0, 5).map(o => `
-        <div class="flex items-center justify-between group">
-            <div class="flex items-center gap-4">
-                <div class="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-gray-500 group-hover:text-rose-500 transition">
-                    <i class="fas fa-shopping-cart text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-[11px] font-black uppercase text-white tracking-tight">${o.userName}</p>
-                    <p class="text-[8px] text-gray-600 font-bold uppercase">${new Date(o.orderedAt).toLocaleDateString()}</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="text-[11px] font-black text-white">৳${o.totalAmount}</p>
-                <p class="text-[7px] text-rose-500 font-black uppercase tracking-widest">${o.status || 'Pending'}</p>
-            </div>
+    await fetch(`${BASE_URL}/admin/add-product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newP)
+    });
+    
+    toggleModal('add-modal');
+    refreshData();
+};
+
+function updateStats(products, orders) {
+    document.getElementById('product-count').innerText = products.length;
+    document.getElementById('order-count').innerText = orders.length;
+    const rev = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    document.getElementById('total-revenue').innerText = `৳${rev.toLocaleString()}`;
+    
+    // Mini orders list for dashboard
+    document.getElementById('orders-list-mini').innerHTML = orders.slice(0, 4).map(o => `
+        <div class="flex justify-between items-center border-b border-white/5 pb-4">
+            <div><p class="text-[10px] font-bold uppercase">${o.userName}</p><p class="text-[8px] text-gray-600">${new Date(o.orderedAt).toLocaleDateString()}</p></div>
+            <p class="text-[10px] font-bold text-rose-500">৳${o.totalAmount}</p>
         </div>
-    `).join(''); //
+    `).join('');
 
     renderChart(orders);
 }
 
-// ৩. গ্রাফ রেন্ডারিং (ভিডিওর মতো স্মুথ কার্ভ)
 function renderChart(orders) {
     const ctx = document.getElementById('revenueChart').getContext('2d');
-    
-    // লাস্ট ৫টি অর্ডারের ডাটা
-    const chartData = orders.slice(0, 5).reverse();
-    const labels = chartData.map(o => new Date(o.orderedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
-    const values = chartData.map(o => o.totalAmount);
-
-    new Chart(ctx, {
+    if (revenueChartInstance) revenueChartInstance.destroy();
+    const data = orders.slice(0, 7).reverse();
+    revenueChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
-            datasets: [{
-                data: values,
-                borderColor: '#f43f5e',
-                borderWidth: 4,
-                pointRadius: 0,
-                backgroundColor: 'rgba(244, 63, 94, 0.1)',
-                fill: true,
-                tension: 0.4 // স্মুথ গ্রাফ
-            }]
+            labels: data.map(o => new Date(o.orderedAt).toLocaleDateString()),
+            datasets: [{ data: data.map(o => o.totalAmount), borderColor: '#f43f5e', tension: 0.4, fill: true, backgroundColor: 'rgba(244, 63, 94, 0.05)' }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { display: false },
-                x: { 
-                    grid: { display: false },
-                    ticks: { color: '#4b5563', font: { size: 9, weight: 'bold' } }
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
     });
 }
 
-function logout() {
-    if(confirm("Logout from Admin Panel?")) {
-        window.location.href = 'index.html';
-    }
-}
-
-// ইনিশিয়াল কল
-document.addEventListener('DOMContentLoaded', loadDashboard);
+function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+function handleAdminLogout() { localStorage.removeItem('adminAuth'); window.location.reload(); }
