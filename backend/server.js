@@ -7,64 +7,68 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ১. ডাটাবেজ কানেকশন (Timeout এবং Error Handling সহ)
-mongoose.connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000 
-})
-.then(() => console.log('✅ MongoDB Connected'))
-.catch(err => console.error('❌ MongoDB Connection Failed:', err.message));
+// ১. ডাটাবেজ কানেকশন
+mongoose.connect(process.env.MONGODB_URI || 'your_mongodb_url_here')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-// ২. প্রোডাক্ট মডেল
+// ২. প্রোডাক্ট মডেল (ইন-স্টক ফিচারসহ)
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     price: { type: Number, required: true },
     oldPrice: { type: Number },
     image: { type: String, required: true },
     description: { type: String },
-    inStock: { type: Boolean, default: true }
+    customDiscount: { type: String },
+    inStock: { type: Boolean, default: true } // স্টক ম্যানেজমেন্টের জন্য
 });
+
 const Product = mongoose.model('Product', productSchema);
 
-// ৩. পাবলিক রুট: সব প্রোডাক্ট (৫০০ এরর ফিক্স)
+// ৩. পাবলিক রুট: সব প্রোডাক্ট পাওয়া
 app.get('/products', async (req, res) => {
     try {
-        const products = await Product.find().lean();
-        res.status(200).json(products || []); 
+        const products = await Product.find();
+        res.json(products);
     } catch (err) {
-        console.error("Fetch Error:", err);
-        res.status(200).json([]); // এরর হলেও খালি অ্যারে পাঠাবে যাতে ফ্রন্টএন্ড লুপ না ভাঙে
+        res.status(500).json({ message: "Error fetching products" });
     }
 });
 
-// ৪. অ্যাডমিন রুট: প্রোডাক্ট পাবলিশ
+// ৪. অ্যাডমিন রুট: নতুন প্রোডাক্ট অ্যাড করা
 app.post('/admin/add-product', async (req, res) => {
     try {
         const newProduct = new Product(req.body);
         await newProduct.save();
-        res.status(201).json({ success: true, message: "Published!" });
+        res.status(201).json({ message: "Product added successfully!" });
     } catch (err) {
-        res.status(400).json({ success: false, message: "Publish Failed" });
+        res.status(400).json({ message: "Error adding product" });
     }
 });
 
-// ৫. স্টক ও ডিলিট ম্যানেজমেন্ট
+// ৫. অ্যাডমিন রুট: স্টক স্ট্যাটাস পরিবর্তন করা (Toggle Stock)
 app.patch('/admin/toggle-stock/:id', async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        if(product) {
-            product.inStock = !product.inStock;
-            await product.save();
-            res.json({ inStock: product.inStock });
-        }
-    } catch (err) { res.status(500).send(); }
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        product.inStock = !product.inStock; // ট্রু থাকলে ফলস হবে, ফলস থাকলে ট্রু
+        await product.save();
+        res.json({ message: "Stock status updated!", inStock: product.inStock });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
+// ৬. অ্যাডমিন রুট: প্রোডাক্ট ডিলিট করা
 app.delete('/admin/delete-product/:id', async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
-        res.json({ message: "Deleted" });
-    } catch (err) { res.status(500).send(); }
+        res.json({ message: "Product deleted!" });
+    } catch (err) {
+        res.status(500).json({ message: "Delete failed" });
+    }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server live on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
