@@ -41,7 +41,7 @@ async function addProduct() {
     const price = document.getElementById('price').value;
     const oldPrice = document.getElementById('oldPrice').value;
     const image = document.getElementById('imgUrl').value;
-    const description = document.getElementById('description').value;
+    const description = document.getElementById('description').value; // গুরুত্বপূর্ণ
     const soldCount = document.getElementById('soldCount').value;
     const ratings = document.getElementById('ratings').value;
     const stockQuantity = document.getElementById('stockQuantity').value;
@@ -50,8 +50,15 @@ async function addProduct() {
     if(!name || !price || !image) return showMsg('action-msg', 'Name, Price and Image are required!', true);
 
     const productData = { 
-        name, price, oldPrice, image, description, 
-        soldCount, ratings, stockQuantity, category 
+        name, 
+        price: Number(price), 
+        oldPrice: Number(oldPrice) || 0, 
+        image, 
+        description, // ডেসক্রিপশন ডাটা
+        soldCount: Number(soldCount) || 0, 
+        ratings: Number(ratings) || 5.0, 
+        stockQuantity: Number(stockQuantity) || 0, 
+        category 
     };
     
     const url = editingProductId ? `${BASE_URL}/admin/edit-product/${editingProductId}` : `${BASE_URL}/admin/add-product`;
@@ -76,7 +83,7 @@ async function addProduct() {
     }
 }
 
-// এডিট মোড শুরু (ফিক্সড: ডেসক্রিপশন এরর হ্যান্ডলিং)
+// এডিট মোড শুরু
 function startEdit(id, name, price, oldPrice, image, description, soldCount, ratings, stockQty, cat) {
     editingProductId = id;
     document.getElementById('name').value = name;
@@ -84,7 +91,7 @@ function startEdit(id, name, price, oldPrice, image, description, soldCount, rat
     document.getElementById('oldPrice').value = oldPrice || '';
     document.getElementById('imgUrl').value = image;
     
-    // ডেসক্রিপশনে নিউ লাইন থাকলে তা ঠিকভাবে দেখানোর জন্য
+    // ডেসক্রিপশন ডিকোড করা হচ্ছে
     document.getElementById('description').value = description ? decodeURIComponent(description) : '';
     
     document.getElementById('soldCount').value = soldCount || '';
@@ -93,7 +100,7 @@ function startEdit(id, name, price, oldPrice, image, description, soldCount, rat
     document.getElementById('category').value = cat || '';
     
     document.getElementById('publish-btn').innerText = 'Update Product';
-    showMsg('action-msg', 'Editing: ' + name);
+    showMsg('action-msg', 'Editing Mode Active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -120,6 +127,7 @@ async function loadAdminProducts() {
     list.innerHTML = products.map(p => {
         // ডেসক্রিপশন টেক্সটকে নিরাপদ করার জন্য এনকোড করা হচ্ছে
         const safeDesc = p.description ? encodeURIComponent(p.description) : "";
+        const safeName = p.name ? p.name.replace(/'/g, "\\'") : "Product";
         
         return `
         <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
@@ -127,11 +135,11 @@ async function loadAdminProducts() {
                 <img src="${p.image}" class="w-8 h-8 object-contain">
                 <div>
                     <p class="text-[11px] font-bold truncate w-24">${p.name}</p>
-                    <p class="text-[9px] text-rose-500 font-bold">৳${p.price} ${p.oldPrice ? `<span class="line-through text-gray-500 ml-1">৳${p.oldPrice}</span>` : ''}</p>
+                    <p class="text-[9px] text-rose-500 font-bold">৳${p.price}</p>
                 </div>
             </div>
             <div class="flex gap-1">
-                <button onclick="startEdit('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.oldPrice || 0}, '${p.image}', '${safeDesc}', ${p.soldCount || 0}, ${p.ratings || 5.0}, ${p.stockQuantity || 0}, '${p.category || ''}')" class="text-yellow-500 hover:bg-yellow-500/10 p-2 rounded-lg transition"><i class="fas fa-edit text-[10px]"></i></button>
+                <button onclick="startEdit('${p._id}', '${safeName}', ${p.price}, ${p.oldPrice || 0}, '${p.image}', '${safeDesc}', ${p.soldCount || 0}, ${p.ratings || 5.0}, ${p.stockQuantity || 0}, '${p.category || ''}')" class="text-yellow-500 hover:bg-yellow-500/10 p-2 rounded-lg transition"><i class="fas fa-edit text-[10px]"></i></button>
                 <button onclick="toggleStock('${p._id}')" class="text-blue-500 hover:bg-blue-500/10 p-2 rounded-lg transition"><i class="fas fa-sync-alt text-[10px]"></i></button>
                 <button onclick="deleteProduct('${p._id}')" class="text-rose-500 hover:bg-rose-500/10 p-2 rounded-lg transition"><i class="fas fa-trash-alt text-[10px]"></i></button>
             </div>
@@ -167,7 +175,6 @@ async function loadAdminBanners() {
         </div>`).join('');
 }
 
-// ৬. ডিলিট ও স্টক আপডেট
 async function deleteProduct(id) { if(confirm("Delete Product?")) { await fetch(`${BASE_URL}/admin/delete-product/${id}`, {method: 'DELETE'}); loadAdminProducts(); } }
 async function toggleStock(id) { await fetch(`${BASE_URL}/admin/toggle-stock/${id}`, {method: 'PATCH'}); loadAdminProducts(); }
 async function deleteBanner(id) { if(confirm("Remove Banner?")) { await fetch(`${BASE_URL}/admin/delete-banner/${id}`, {method: 'DELETE'}); loadAdminBanners(); } }
