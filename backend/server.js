@@ -8,16 +8,24 @@ app.use(cors());
 app.use(express.json());
 
 // রেলওয়ে ভেরিয়েবল থেকে পোর্ট এবং ডাটাবেজ লিঙ্ক নেওয়া
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 const mongoURI = process.env.MONGO_URI;
+
+// ১. ডিফল্ট রুট (রেলওয়ে সার্ভারকে সচল রাখার জন্য এটি জরুরি)
+app.get('/', (req, res) => {
+    res.status(200).send('Turjo Site Backend is Active and Running!');
+});
 
 // ডাটাবেজ কানেকশন সেটআপ
 if (mongoURI) {
-    mongoose.connect(mongoURI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
+    mongoose.connect(mongoURI)
+    .then(() => {
+        console.log("✅ MongoDB Connected Successfully!");
+        // সার্ভার লিসেনিং নিশ্চিত করা
+        app.listen(PORT, () => {
+            console.log(`🚀 Server is live on port ${PORT}`);
+        });
     })
-    .then(() => console.log("✅ MongoDB Connected Successfully!"))
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 } else {
     console.error("❌ Error: MONGO_URI is not defined in Railway Variables!");
@@ -43,11 +51,8 @@ app.get('/products', async (req, res) => {
 
 // অ্যাডমিন প্যানেল থেকে নতুন প্রোডাক্ট অ্যাড করার রুট
 app.post('/admin/add-product', async (req, res) => {
-    const product = new Product({
-        name: req.body.name,
-        price: req.body.price,
-        image: req.body.image
-    });
+    const { name, price, image } = req.body;
+    const product = new Product({ name, price, image });
 
     try {
         const newProduct = await product.save();
@@ -55,8 +60,4 @@ app.post('/admin/add-product', async (req, res) => {
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
-});
-
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
 });
