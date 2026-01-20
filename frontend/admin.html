@@ -2,71 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Turjo Site</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #0d0915; color: white; font-family: sans-serif; }
-        .input-box { background: #161021; border: 1px solid #251d33; width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; outline: none; color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { background: #0d0915; color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-box { background: #161021; border: 1px solid #251d33; border-radius: 20px; }
+        .input-style { background: #0d0915; border: 1px solid #251d33; width: 100%; padding: 14px; border-radius: 12px; outline: none; transition: 0.3s; color: white; font-size: 14px; }
+        .input-style:focus { border-color: #f43f5e; box-shadow: 0 0 15px rgba(244, 63, 94, 0.1); }
+        .btn-publish { background: linear-gradient(90deg, #9333ea, #db2777); }
     </style>
 </head>
-<body class="p-10">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-8 uppercase tracking-tighter">Publish Product</h1>
-        <form id="product-form" class="bg-[#161021] p-8 rounded-2xl border border-white/5 mb-16 shadow-2xl">
-            <input type="text" id="name" placeholder="Product Name" class="input-box" required>
-            <input type="number" id="price" placeholder="Price (৳)" class="input-box" required>
-            <input type="text" id="image" placeholder="Image URL" class="input-box" required>
-            <textarea id="description" placeholder="Description" class="input-box h-32"></textarea>
-            <button type="submit" class="w-full bg-rose-600 py-3 rounded-lg font-bold uppercase text-sm">Publish Product</button>
-        </form>
-        <h2 class="text-2xl font-bold mb-6">Manage Products</h2>
-        <div id="admin-product-list" class="space-y-4"></div>
+<body class="p-6 md:p-12">
+    <div class="max-w-5xl mx-auto">
+        <div class="flex items-center justify-between mb-12">
+            <div>
+                <h1 class="text-3xl font-extrabold uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-500">Admin Control</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-bold mt-1">Turjo Site Management</p>
+            </div>
+            <a href="index.html" class="text-xs font-bold text-gray-400 hover:text-white transition uppercase border-b border-white/10 pb-1">Back to Site</a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div class="lg:col-span-5">
+                <div class="glass-box p-8 sticky top-10">
+                    <h2 class="text-sm font-bold mb-6 uppercase tracking-widest text-gray-400">Add New Product</h2>
+                    <form id="product-form" class="space-y-4">
+                        <input type="text" id="name" placeholder="Product Name" class="input-style" required>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" id="price" placeholder="Price (৳)" class="input-style" required>
+                            <input type="number" id="oldPrice" placeholder="Old Price" class="input-style">
+                        </div>
+                        <input type="text" id="image" placeholder="Image URL (ImgBB Direct Link)" class="input-style" required>
+                        <textarea id="description" placeholder="Product Description..." class="input-style h-32 resize-none"></textarea>
+                        
+                        <button type="submit" class="w-full btn-publish py-4 rounded-xl font-black uppercase text-xs tracking-widest shadow-xl shadow-pink-500/20 active:scale-95 transition mt-4">
+                            Publish Product
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7">
+                <h2 class="text-sm font-bold mb-6 uppercase tracking-widest text-gray-400 flex items-center gap-3">
+                    <span class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span> Live Products
+                </h2>
+                <div id="admin-product-list" class="space-y-4">
+                    <div class="text-center py-20 text-gray-600 text-xs uppercase tracking-widest">
+                        Loading database...
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        const API_URL = 'https://website-production-f869.up.railway.app';
-
-        document.getElementById('product-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                name: document.getElementById('name').value,
-                price: Number(document.getElementById('price').value),
-                image: document.getElementById('image').value,
-                description: document.getElementById('description').value
-            };
-            const res = await fetch(`${API_URL}/admin/add-product`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if(res.ok) { alert("Success!"); location.reload(); }
-        });
-
-        async function loadAdminProducts() {
-            try {
-                const res = await fetch(`${API_URL}/products`);
-                const products = await res.json();
-                const list = document.getElementById('admin-product-list');
-                if (Array.isArray(products)) {
-                    list.innerHTML = '';
-                    products.forEach(p => {
-                        list.innerHTML += `
-                            <div class="bg-[#161021] p-4 rounded-xl flex items-center justify-between border border-white/5">
-                                <span class="font-bold text-sm uppercase">${p.name}</span>
-                                <div class="flex gap-2">
-                                    <button onclick="toggleStock('${p._id}')" class="px-3 py-1 text-xs rounded uppercase font-bold ${p.inStock ? 'bg-green-600' : 'bg-gray-600'}">Stock</button>
-                                    <button onclick="deleteProduct('${p._id}')" class="px-3 py-1 text-xs bg-red-600 rounded uppercase font-bold">Delete</button>
-                                </div>
-                            </div>`;
-                    });
-                }
-            } catch(err) { console.error("Error loading products"); }
-        }
-
-        async function toggleStock(id) { await fetch(`${API_URL}/admin/toggle-stock/${id}`, { method: 'PATCH' }); location.reload(); }
-        async function deleteProduct(id) { if(confirm("Delete?")) { await fetch(`${API_URL}/admin/delete-product/${id}`, { method: 'DELETE' }); location.reload(); } }
-        
-        loadAdminProducts();
-    </script>
+    <script src="js/admin.js"></script>
 </body>
 </html>
