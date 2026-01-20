@@ -10,13 +10,22 @@ app.use(express.json());
 const PORT = process.env.PORT || 8080;
 const mongoURI = process.env.MONGO_URI;
 
-mongoose.connect(mongoURI).then(() => console.log("✅ MongoDB Connected Successfully!")).catch(err => console.error(err));
+mongoose.connect(mongoURI)
+    .then(() => console.log("✅ MongoDB Connected Successfully!"))
+    .catch(err => console.error(err));
 
 // --- মডলেসমূহ ---
+
+// ১. প্রোডাক্ট মডেল (oldPrice ফিল্ড যুক্ত করা হয়েছে)
 const Product = mongoose.model('Product', new mongoose.Schema({
-    name: String, price: Number, image: String, inStock: { type: Boolean, default: true }
+    name: String, 
+    price: Number, 
+    oldPrice: Number, // ডিসকাউন্ট দেখানোর জন্য আগের দাম
+    image: String, 
+    inStock: { type: Boolean, default: true }
 }));
 
+// ২. ব্যানার মডেল
 const Banner = mongoose.model('Banner', new mongoose.Schema({
     imageUrl: { type: String, required: true },
     displayTime: { type: Number, default: 5000 }
@@ -24,17 +33,32 @@ const Banner = mongoose.model('Banner', new mongoose.Schema({
 
 // --- রুটসমূহ ---
 
-// ১. প্রোডাক্ট রুট
+// ১. প্রোডাক্ট রুটসমূহ
 app.get('/products', async (req, res) => {
     const products = await Product.find();
     res.json(products);
 });
 
 app.post('/admin/add-product', async (req, res) => {
-    const { name, price, image } = req.body;
-    const product = new Product({ name, price, image });
+    const { name, price, oldPrice, image } = req.body;
+    const product = new Product({ name, price, oldPrice, image }); // oldPrice সহ সেভ হবে
     await product.save();
     res.status(201).json(product);
+});
+
+// ৩. প্রোডাক্ট এডিট করার নতুন রুট (PUT Method)
+app.put('/admin/edit-product/:id', async (req, res) => {
+    try {
+        const { name, price, oldPrice, image } = req.body;
+        const updatedProduct = await Product.findByIdAndUpdate(
+            req.params.id, 
+            { name, price, oldPrice, image }, 
+            { new: true }
+        );
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 app.delete('/admin/delete-product/:id', async (req, res) => {
@@ -49,7 +73,7 @@ app.patch('/admin/toggle-stock/:id', async (req, res) => {
     res.json(product);
 });
 
-// ২. ব্যানার রুট
+// ২. ব্যানার রুটসমূহ
 app.get('/banners', async (req, res) => {
     const banners = await Banner.find();
     res.json(banners);
