@@ -10,25 +10,25 @@ app.use(cors());
 // ১. নিরাপদ কানেকশন লজিক
 const dbURI = process.env.MONGODB_URI || "";
 
-if (dbURI.startsWith("mongodb")) {
+if (dbURI && dbURI.startsWith("mongodb")) {
     mongoose.connect(dbURI)
-        .then(() => console.log('✅ MongoDB Connected'))
-        .catch(err => console.error('❌ DB Error:', err.message));
+        .then(() => console.log('✅ Connected to MongoDB Successfully'))
+        .catch(err => console.error('❌ Database Connection Failed:', err.message));
 } else {
-    console.error('❌ CRITICAL ERROR: MONGODB_URI is missing or has an invalid scheme!');
+    console.error('❌ CRITICAL: Invalid MONGODB_URI in Railway Variables!');
 }
 
 const Product = mongoose.model('Product', new mongoose.Schema({
     name: String, price: Number, image: String, description: String, inStock: { type: Boolean, default: true }
 }));
 
-// ২. প্রোডাক্ট রুট (৫০০ এরর এবং ফর-ইচ এরর ফিক্স)
+// ২. প্রোডাক্ট রুট (৫০০ এরর এবং ফর-ইচ এরর চিরতরে ফিক্স)
 app.get('/products', async (req, res) => {
     try {
         const products = await Product.find().lean();
         res.status(200).json(products || []); 
     } catch (err) {
-        res.status(200).json([]); // ডাটাবেজ কানেক্ট না হলেও খালি লিস্ট পাঠাবে যাতে ফ্রন্টএন্ড না ভাঙে
+        res.status(200).json([]); // ডাটাবেজ এরর হলেও খালি লিস্ট পাঠাবে
     }
 });
 
@@ -48,4 +48,4 @@ app.delete('/admin/delete-product/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server live on port ${PORT}`));
