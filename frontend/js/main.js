@@ -1,6 +1,6 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 const API_URL = `${BASE_URL}/products`;
-const WHATSAPP_NUMBER = '8801XXXXXXXXX'; // আপনার হোয়াটসঅ্যাপ নাম্বারটি এখানে দিন
+const WHATSAPP_NUMBER = '8801847853867'; // আপনার হোয়াটসঅ্যাপ নাম্বারটি এখানে দিন
 let allProducts = [];
 let cart = []; 
 
