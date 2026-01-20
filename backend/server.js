@@ -7,37 +7,59 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// MongoDB কানেকশন
+// ১. ডাটাবেজ কানেকশন চেক
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ Connected to MongoDB'))
-    .catch(err => console.error('❌ Connection Failed:', err));
+    .then(() => console.log('✅ MongoDB Connected Successfully'))
+    .catch(err => console.error('❌ Connection Failed:', err.message));
 
+// ২. প্রোডাক্ট মডেল
 const productSchema = new mongoose.Schema({
-    name: String, price: Number, oldPrice: Number, 
-    image: String, description: String, inStock: { type: Boolean, default: true }
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    oldPrice: { type: Number },
+    image: { type: String, required: true },
+    description: { type: String },
+    inStock: { type: Boolean, default: true }
 });
 const Product = mongoose.model('Product', productSchema);
 
-// এই গেট রুটটি আপনার ৫০০ এরর দূর করবে
+// ৩. পাবলিক রুট: সব প্রোডাক্ট পাওয়া
 app.get('/products', async (req, res) => {
     try {
         const products = await Product.find() || [];
-        res.status(200).json(products); 
+        res.status(200).json(products); // সবসময় অ্যারে পাঠাবে
     } catch (err) {
-        console.error("Fetch Error:", err);
-        res.status(500).json([]); // এরর হলেও ফ্রন্টএন্ডে খালি অ্যারে পাঠাবে
+        res.status(500).json([]); // এরর হলেও খালি অ্যারে পাঠাবে যাতে সাইট না ভাঙে
     }
 });
 
+// ৪. অ্যাডমিন রুট: প্রোডাক্ট পাবলিশ
 app.post('/admin/add-product', async (req, res) => {
     try {
         const newProduct = new Product(req.body);
         await newProduct.save();
-        res.status(201).json({ message: "Product published!" });
+        res.status(201).json({ success: true, message: "Published!" });
     } catch (err) {
-        res.status(400).json({ message: "Publish failed" });
+        res.status(400).json({ success: false, message: "Publish Failed" });
     }
 });
 
+// ৫. স্টক ও ডিলিট ম্যানেজমেন্ট
+app.patch('/admin/toggle-stock/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        product.inStock = !product.inStock;
+        await product.save();
+        res.json({ inStock: product.inStock });
+    } catch (err) { res.status(500).send(); }
+});
+
+app.delete('/admin/delete-product/:id', async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Deleted" });
+    } catch (err) { res.status(500).send(); }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server is running`));
+app.listen(PORT, () => console.log(`Server live on port ${PORT}`));
