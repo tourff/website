@@ -7,65 +7,139 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d0915; color: white; }
-        .glass-card { background: rgba(22, 16, 33, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .profile-gradient { background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #0b0712; 
+            color: white; 
+            overflow-x: hidden;
+        }
+
+        /* এনিমেটেড ব্যাকগ্রাউন্ড গ্লো */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% -20%, #3e1a47 0%, transparent 50%),
+                        radial-gradient(circle at -10% 50%, #1a1a47 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .profile-banner {
+            background: linear-gradient(90deg, #9333ea, #db2777);
+            filter: hue-rotate(15deg);
+        }
+
+        .input-style {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-style:focus {
+            border-color: #f43f5e;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+        }
+
+        .btn-update {
+            background: linear-gradient(to right, #e11d48, #be123c);
+            transition: transform 0.2s active:scale-95;
+        }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="min-h-screen">
 
-    <nav class="p-4 border-b border-white/5 bg-[#161021]">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-2 hover:text-rose-500 transition">
-                <i class="fas fa-arrow-left"></i> Back to Store
+    <div class="bg-glow"></div>
+
+    <nav class="sticky top-0 z-50 backdrop-blur-md border-b border-white/5 py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 group text-gray-400 hover:text-white transition">
+                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i>
+                <span class="font-semibold text-sm">Return to Store</span>
             </a>
-            <button onclick="logout()" class="text-rose-500 font-bold text-sm">Logout</button>
+            <div class="text-xs font-black uppercase tracking-[0.2em] text-rose-500">Member Dashboard</div>
         </div>
     </nav>
 
-    <div class="container mx-auto px-4 mt-10">
-        <div class="max-w-4xl mx-auto">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-3xl mx-auto">
             
-            <div class="glass-card rounded-[2rem] overflow-hidden shadow-2xl mb-8">
-                <div class="h-32 profile-gradient relative"></div>
-                <div class="px-8 pb-8 -mt-12">
-                    <div class="flex flex-col md:flex-row items-end gap-6">
-                        <div id="user-avatar" class="w-24 h-24 profile-gradient rounded-full border-4 border-[#0d0915] flex items-center justify-center text-3xl font-black shadow-xl">
+            <div class="glass-card rounded-[2.5rem] overflow-hidden relative mb-8">
+                <div class="h-40 profile-banner relative">
+                    <div class="absolute inset-0 bg-black/20"></div>
+                </div>
+                <div class="px-10 pb-10">
+                    <div class="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 relative z-10">
+                        <div id="user-avatar" class="w-32 h-32 profile-banner rounded-full border-[6px] border-[#0b0712] flex items-center justify-center text-4xl font-black shadow-2xl">
                             </div>
-                        <div class="flex-1 text-center md:text-left">
-                            <h1 id="user-name" class="text-2xl font-bold tracking-tight">User Name</h1>
-                            <p class="text-gray-500 text-sm">Premium Account Member</p>
+                        <div class="text-center md:text-left flex-1 mb-2">
+                            <h1 id="user-name" class="text-3xl font-extrabold tracking-tight text-white mb-1">User Name</h1>
+                            <div class="flex items-center justify-center md:justify-start gap-2">
+                                <span class="bg-green-500/10 text-green-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase border border-green-500/20">Verified Account</span>
+                                <span class="text-gray-500 text-xs">• Joined 2026</span>
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="mb-2 text-xs font-bold text-gray-400 hover:text-rose-500 transition px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div class="glass-card p-8 rounded-3xl text-center group hover:border-rose-500/50 transition">
+                    <div class="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
+                        <i class="fas fa-shopping-bag text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Orders</p>
+                    <h3 class="text-3xl font-black">0</h3>
+                </div>
+                <div class="glass-card p-8 rounded-3xl text-center group hover:border-violet-500/50 transition">
+                    <div class="w-12 h-12 bg-violet-500/10 text-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
+                        <i class="fas fa-wallet text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Balance</p>
+                    <h3 class="text-3xl font-black">৳0</h3>
+                </div>
+            </div>
+
+            <div class="glass-card p-10 rounded-[2.5rem]">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-1 bg-rose-500 h-6 rounded-full"></div>
+                    <h2 class="text-xl font-extrabold tracking-tight">Profile Settings</h2>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-400 ml-1 uppercase tracking-wider">Change Username</label>
+                        <div class="relative">
+                            <i class="far fa-user absolute left-4 top-4 text-gray-500"></i>
+                            <input type="text" id="edit-name" placeholder="Full Name" class="input-style w-full p-4 pl-12 rounded-2xl outline-none text-sm">
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-center">
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-gray-500 text-xs uppercase tracking-widest mb-2 font-bold">Total Orders</p>
-                    <h3 class="text-2xl font-bold">0</h3>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-gray-500 text-xs uppercase tracking-widest mb-2 font-bold">Account Status</p>
-                    <h3 class="text-green-500 text-2xl font-bold">Active</h3>
-                </div>
-            </div>
-
-            <div class="glass-card p-8 rounded-3xl">
-                <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
-                    <i class="fas fa-cog text-rose-500"></i> Account Settings
-                </h2>
-                <div class="space-y-4">
-                    <div class="flex flex-col gap-2">
-                        <label class="text-xs text-gray-400 ml-1">Display Name</label>
-                        <input type="text" id="edit-name" class="w-full bg-[#1e162e] border border-white/5 p-3 rounded-xl outline-none focus:border-rose-500 transition text-sm">
+                    <div class="pt-4">
+                        <button onclick="updateProfile()" class="btn-update w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-rose-900/20 active:scale-[0.98] transition">
+                            Save Changes
+                        </button>
                     </div>
-                    <button onclick="updateProfile()" class="bg-rose-600 hover:bg-rose-700 w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg transition">
-                        Update Information
-                    </button>
                 </div>
             </div>
+
+            <p class="text-center mt-10 text-gray-600 text-[10px] uppercase tracking-widest font-bold">
+                Protected by Turjo Site Security
+            </p>
 
         </div>
     </div>
