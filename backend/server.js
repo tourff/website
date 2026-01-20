@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -10,23 +9,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
+// MongoDB Connection with Error Handling
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Import Routes
+// Routes Import (Pala kore import kora secure)
 const productRoutes = require('./routes/products');
 const adminRoutes = require('./routes/admin');
 
-// Routes Middleware
 app.use('/products', productRoutes);
 app.use('/admin', adminRoutes);
 
-// Root Route (for testing)
-app.get('/', (req, res) => {
-    res.send("Server is running...");
-});
+// Base route for Railway health check
+app.get('/', (req, res) => res.send("Backend is Live!"));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
