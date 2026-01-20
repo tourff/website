@@ -20,7 +20,6 @@ if (mongoURI) {
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 }
 
-// স্কিমা আপডেট: description এবং customDiscount যোগ করা হয়েছে
 const productSchema = new mongoose.Schema({
     name: String,
     price: Number,
@@ -41,13 +40,21 @@ app.get('/products', async (req, res) => {
 });
 
 app.post('/admin/add-product', async (req, res) => {
-    const { name, price, oldPrice, image, description, customDiscount } = req.body;
-    const product = new Product({ name, price, oldPrice, image, description, customDiscount });
+    const product = new Product(req.body);
     try {
         const newProduct = await product.save();
         res.status(201).json(newProduct);
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+});
+
+app.delete('/admin/delete-product/:id', async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Deleted!" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 
