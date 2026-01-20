@@ -3,55 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Turjo Site</title>
+    <title>Premium Admin Dashboard | Turjo Site</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0b0f1a; font-family: sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        body { background-color: #0b0f1a; font-family: 'Plus Jakarta Sans', sans-serif; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .tab-btn.active { border-bottom: 2px solid #ec4899; color: #ec4899; }
+        .status-msg { display: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 14px; font-weight: bold; }
     </style>
 </head>
-<body class="text-gray-200 flex items-center justify-center min-h-screen py-10">
+<body class="min-h-screen flex items-center justify-center py-10 px-4">
 
-    <div id="login-section" class="glass p-8 rounded-2xl w-full max-w-md shadow-2xl">
-        <h2 class="text-2xl font-bold mb-6 text-center text-white">Admin Login</h2>
-        <input id="password" type="password" placeholder="Enter Password" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg mb-4 outline-none focus:border-pink-500">
-        <button onclick="login()" class="w-full bg-pink-600 hover:bg-pink-700 p-3 rounded-lg font-bold transition">Access Dashboard</button>
+    <div id="login-section" class="glass p-8 rounded-[2rem] w-full max-w-md shadow-2xl">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-black text-white uppercase tracking-tighter">Admin Portal</h2>
+            <p class="text-gray-500 text-xs mt-2 uppercase tracking-widest">Secure Access Only</p>
+        </div>
+        
+        <div id="login-msg" class="status-msg"></div>
+
+        <input id="password" type="password" placeholder="Enter Admin Password" class="w-full bg-gray-900/50 border border-gray-700 p-4 rounded-xl mb-4 outline-none focus:border-pink-500 transition">
+        <button onclick="login()" class="w-full bg-pink-600 hover:bg-pink-700 p-4 rounded-xl font-black uppercase text-xs tracking-widest transition shadow-lg shadow-pink-500/20">Access Dashboard</button>
     </div>
 
-    <div id="admin-section" style="display:none;" class="glass p-8 rounded-2xl w-full max-w-2xl">
-        
-        <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Add New Product</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <input id="name" placeholder="Product Name" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
-            <input id="price" placeholder="Price (৳)" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
-            <input id="imgUrl" placeholder="Image URL" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500 md:col-span-2">
-            <button onclick="addProduct()" class="md:col-span-2 bg-violet-600 hover:bg-violet-700 p-4 rounded-lg font-bold transition">Publish Product</button>
+    <div id="admin-section" style="display:none;" class="glass p-8 rounded-[2.5rem] w-full max-w-4xl">
+        <div class="flex justify-between items-center border-b border-white/5 pb-6 mb-8">
+            <h2 class="text-2xl font-black uppercase tracking-tighter">Dashboard</h2>
+            <button onclick="location.reload()" class="text-xs font-bold text-gray-500 hover:text-rose-500 transition">LOGOUT</button>
         </div>
 
-        <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Manage Banners</h2>
-        <div class="grid grid-cols-1 gap-4 mb-8">
-            <input id="bannerUrl" placeholder="Banner Image URL" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
-            <input id="displayTime" type="number" placeholder="Display Time (ms) - e.g. 5000" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
-            <button onclick="addBanner()" class="bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold transition">Add Banner</button>
+        <div class="flex gap-8 mb-10 border-b border-white/5">
+            <button onclick="showTab('products-tab')" id="btn-products-tab" class="tab-btn active pb-4 font-bold text-sm tracking-tight uppercase">Manage Products</button>
+            <button onclick="showTab('banners-tab')" id="btn-banners-tab" class="tab-btn pb-4 font-bold text-sm tracking-tight uppercase">Manage Banners</button>
         </div>
 
-        <hr class="border-gray-800 mb-8">
+        <div id="action-msg" class="status-msg"></div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-                <h2 class="text-xl font-bold mb-4 text-pink-500">Products</h2>
-                <div id="admin-product-list" class="flex flex-col gap-3 text-xs">
+        <div id="products-tab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div>
+                    <h3 class="text-pink-500 font-black text-xs uppercase tracking-widest mb-6">Add New Product</h3>
+                    <div class="flex flex-col gap-4">
+                        <input id="name" placeholder="Product Name" class="bg-gray-900/50 border border-gray-800 p-3 rounded-xl outline-none focus:border-pink-500 text-sm">
+                        <input id="price" placeholder="Price (৳)" class="bg-gray-900/50 border border-gray-800 p-3 rounded-xl outline-none focus:border-pink-500 text-sm">
+                        <input id="imgUrl" placeholder="Image URL" class="bg-gray-900/50 border border-gray-800 p-3 rounded-xl outline-none focus:border-pink-500 text-sm">
+                        <button onclick="addProduct()" class="bg-pink-600 p-3 rounded-xl font-bold text-xs uppercase tracking-widest mt-2 hover:bg-pink-700 transition">Publish Product</button>
                     </div>
-            </div>
-
-            <div>
-                <h2 class="text-xl font-bold mb-4 text-blue-500">Banners</h2>
-                <div id="admin-banner-list" class="flex flex-col gap-3">
-                    </div>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 font-black text-xs uppercase tracking-widest mb-6">Existing Products</h3>
+                    <div id="admin-product-list" class="max-h-[300px] overflow-y-auto pr-2 space-y-3">
+                        </div>
+                </div>
             </div>
         </div>
 
-        <button onclick="location.reload()" class="mt-10 text-xs text-gray-500 hover:text-white underline">Logout</button>
+        <div id="banners-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div>
+                    <h3 class="text-blue-500 font-black text-xs uppercase tracking-widest mb-6">Upload Banner</h3>
+                    <div class="flex flex-col gap-4">
+                        <input id="bannerUrl" placeholder="Banner URL" class="bg-gray-900/50 border border-gray-800 p-3 rounded-xl outline-none focus:border-blue-500 text-sm">
+                        <input id="displayTime" type="number" placeholder="Time (ms) - Default 5000" class="bg-gray-900/50 border border-gray-800 p-3 rounded-xl outline-none focus:border-blue-500 text-sm">
+                        <button onclick="addBanner()" class="bg-blue-600 p-3 rounded-xl font-bold text-xs uppercase tracking-widest mt-2 hover:bg-blue-700 transition">Save Banner</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 font-black text-xs uppercase tracking-widest mb-6">Current Banners</h3>
+                    <div id="admin-banner-list" class="max-h-[300px] overflow-y-auto pr-2 space-y-3">
+                        </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="js/admin.js"></script>
