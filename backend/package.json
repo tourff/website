@@ -1,20 +1,17 @@
 {
   "name": "turjo-site-backend",
   "version": "1.0.0",
-  "description": "Stable Backend for Turjo Site",
+  "description": "Premium Digital Store Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "mongoose": "^8.9.5"
-  },
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "author": "Turjo",
-  "license": "ISC"
+    "dotenv": "^16.0.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0"
+  }
 }
