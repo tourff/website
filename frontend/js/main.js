@@ -142,11 +142,12 @@ function displayProducts(products) {
         const discountPercentage = hasDiscount ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
 
         const actionBtn = p.inStock !== false 
-            ? `<button onclick="addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">Add to Cart</button>`
+            ? `<button onclick="event.stopPropagation(); addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">Add to Cart</button>`
             : `<button class="w-full bg-gray-800 text-gray-500 text-[10px] font-bold py-2 rounded-lg border border-white/5 cursor-not-allowed uppercase" disabled>Out of Stock</button>`;
 
+        // কার্ডে ক্লিক করলে product.html এ যাবে
         container.innerHTML += `
-            <div class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent relative">
+            <div onclick="window.location.href='product.html?id=${p._id}'" class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent relative cursor-pointer">
                 ${hasDiscount ? `<div class="absolute top-3 left-3 z-10 bg-rose-500 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg">-${discountPercentage}% OFF</div>` : ''}
                 <div class="relative bg-gradient-to-b from-[#3a1a2e] to-transparent p-10 md:p-12 aspect-square flex items-center justify-center">
                     <img src="${p.image}" class="w-full h-full object-contain z-10 group-hover:scale-110 transition duration-700">
