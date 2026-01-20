@@ -16,13 +16,19 @@ mongoose.connect(mongoURI)
 
 // --- মডলেসমূহ ---
 
-// ১. প্রোডাক্ট মডেল (oldPrice ফিল্ড যুক্ত করা হয়েছে)
+// ১. প্রোডাক্ট মডেল (নতুন ফিল্ডসমূহ যুক্ত করা হয়েছে)
 const Product = mongoose.model('Product', new mongoose.Schema({
     name: String, 
     price: Number, 
-    oldPrice: Number, // ডিসকাউন্ট দেখানোর জন্য আগের দাম
+    oldPrice: Number, 
     image: String, 
-    inStock: { type: Boolean, default: true }
+    inStock: { type: Boolean, default: true },
+    stockQuantity: { type: Number, default: 99 }, // স্টকে কতগুলো আছে
+    soldCount: { type: Number, default: 0 },      // কতগুলো বিক্রি হয়েছে
+    ratings: { type: Number, default: 5.0 },     // রেটিং
+    reviews: { type: Number, default: 0 },       // কতজন রিভিউ দিয়েছে
+    description: String,                          // বিস্তারিত বর্ণনা
+    category: String                             // ক্যাটাগরি (রিলেটেড প্রোডাক্টের জন্য)
 }));
 
 // ২. ব্যানার মডেল
@@ -40,19 +46,22 @@ app.get('/products', async (req, res) => {
 });
 
 app.post('/admin/add-product', async (req, res) => {
-    const { name, price, oldPrice, image } = req.body;
-    const product = new Product({ name, price, oldPrice, image }); // oldPrice সহ সেভ হবে
+    // নতুন ফিল্ডগুলো বডি থেকে নেওয়া হচ্ছে
+    const { name, price, oldPrice, image, description, stockQuantity, soldCount, ratings, reviews, category } = req.body;
+    const product = new Product({ 
+        name, price, oldPrice, image, description, stockQuantity, soldCount, ratings, reviews, category 
+    });
     await product.save();
     res.status(201).json(product);
 });
 
-// ৩. প্রোডাক্ট এডিট করার নতুন রুট (PUT Method)
+// ৩. প্রোডাক্ট এডিট করার রুট
 app.put('/admin/edit-product/:id', async (req, res) => {
     try {
-        const { name, price, oldPrice, image } = req.body;
+        const updateData = req.body; // সব ডাটা একসাথে আপডেট করার জন্য
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id, 
-            { name, price, oldPrice, image }, 
+            updateData, 
             { new: true }
         );
         res.json(updatedProduct);
