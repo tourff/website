@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | Turjo Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { background-color: #0d0915; color: white; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        .nav-bg { background: #161021; border-bottom: 1px solid #251d33; }
+        .glass-card { background: #161021; border: 1px solid #251d33; border-radius: 24px; }
+        .btn-gradient { background: linear-gradient(90deg, #9333ea, #db2777); }
+        .btn-whatsapp { background: #22c55e; }
+        .related-card { background: #161021; border: 1px solid #251d33; transition: 0.3s; }
+        .related-card:hover { border-color: #f43f5e; transform: translateY(-5px); }
+    </style>
+</head>
+<body class="pb-20">
+
+    <nav class="nav-bg sticky top-0 z-50 py-3 mb-10">
+        <div class="container mx-auto px-4 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 shrink-0 cursor-pointer" onclick="window.location.href='index.html'">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                    <i class="fas fa-bolt text-black text-xl"></i>
+                </div>
+                <h1 class="font-bold text-lg leading-tight uppercase tracking-tighter">Turjo Site</h1>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <a href="index.html" class="hover:text-rose-500 transition">Home</a>
+                <div id="auth-nav-details">
+                    <i class="far fa-user-circle text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 max-w-7xl">
+        <nav class="text-[10px] text-gray-500 mb-8 uppercase tracking-widest flex items-center gap-2">
+            Home / Digital Tools / <span id="bread-name" class="text-rose-500 font-bold">Product</span>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+            <div class="lg:col-span-7 space-y-8">
+                <div class="glass-card p-10 flex flex-col items-center">
+                    <div class="relative w-full aspect-square md:aspect-video flex items-center justify-center mb-10">
+                        <img id="p-img" src="" class="w-full h-full object-contain drop-shadow-[0_35px_35px_rgba(244,63,94,0.15)]">
+                        <div class="absolute inset-4 border border-white/5 rounded-3xl pointer-events-none bg-white/5"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 w-full border-t border-white/5 pt-8 text-center">
+                        <div><p class="font-black text-rose-500 text-xl tracking-tighter">388+</p><p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Sold</p></div>
+                        <div class="border-x border-white/5"><p class="font-black text-rose-500 text-xl tracking-tighter">2+</p><p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Loved</p></div>
+                        <div><p class="font-black text-rose-500 text-xl tracking-tighter">5.0</p><p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Rating</p></div>
+                    </div>
+                </div>
+
+                <div class="glass-card overflow-hidden">
+                    <div class="flex gap-8 px-8 pt-6 border-b border-white/5 text-[11px] font-black uppercase tracking-widest">
+                        <button class="text-rose-500 border-b-2 border-rose-500 pb-4">Description</button>
+                        <button class="text-gray-500 pb-4">Reviews (1)</button>
+                        <button class="text-gray-500 pb-4">FAQ</button>
+                    </div>
+                    <div id="p-desc" class="p-8 text-sm text-gray-400 leading-relaxed space-y-4">
+                        </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 space-y-6">
+                <div class="glass-card p-8 sticky top-24">
+                    <h1 id="p-name" class="text-3xl font-black mb-2 uppercase tracking-tighter leading-none">Product Title</h1>
+                    <div class="flex items-center gap-1.5 text-yellow-500 text-[10px] mb-8">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        <span class="text-gray-500 ml-1 font-bold">5.0 (1+ reviews)</span>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <p id="p-price" class="text-5xl font-black text-rose-500 tracking-tighter mb-1">৳0</p>
+                        <p class="text-[11px] font-bold text-green-500 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> In Stock (99 available)
+                        </p>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                <i class="fas fa-cube text-rose-500"></i> Select Plan:
+                            </label>
+                            <select id="p-plan" class="w-full bg-[#0d0915] border border-[#251d33] p-3.5 rounded-xl text-xs font-bold outline-none focus:border-rose-500 transition">
+                                <option>1 MONTH CHATGPT 5.2 FLAGSHIP — (2026)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Quantity:</span>
+                            <div class="flex items-center bg-[#0d0915] border border-[#251d33] rounded-xl overflow-hidden">
+                                <button class="px-5 py-2 hover:text-rose-500 transition">-</button>
+                                <span class="px-5 py-2 font-black border-x border-[#251d33] text-sm">1</span>
+                                <button class="px-5 py-2 hover:text-rose-500 transition">+</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-6 space-y-3">
+                            <button onclick="addToCartDetails()" class="w-full btn-gradient py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-rose-600/30 transition active:scale-95">
+                                <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                            </button>
+                            <button onclick="buyViaWA()" class="w-full btn-whatsapp py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-green-600/20 transition active:scale-95">
+                                <i class="fab fa-whatsapp text-lg"></i> Buy Now via WhatsApp
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-white/5 flex items-center gap-4">
+                        <div class="w-10 h-10 bg-rose-600/10 rounded-xl flex items-center justify-center text-rose-500">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest">Instant Delivery</p>
+                            <p class="text-[9px] text-gray-500">Via WhatsApp within minutes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-24">
+            <div class="mb-10">
+                <p class="text-rose-500 font-black uppercase text-[10px] tracking-widest mb-1">You May Also Like</p>
+                <h3 class="text-3xl font-black uppercase tracking-tighter">Related Products</h3>
+            </div>
+            <div id="related-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+                </div>
+        </div>
+    </div>
+
+    <script src="js/details.js"></script>
+</body>
+</html>
