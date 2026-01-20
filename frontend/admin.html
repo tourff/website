@@ -10,24 +10,27 @@
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="text-gray-200 flex items-center justify-center min-h-screen">
+<body class="text-gray-200 flex items-center justify-center min-h-screen py-10">
 
     <div id="login-section" class="glass p-8 rounded-2xl w-full max-w-md shadow-2xl">
         <h2 class="text-2xl font-bold mb-6 text-center text-white">Admin Login</h2>
-        <input id="password" type="password" placeholder="Enter Admin Password" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg mb-4 focus:border-pink-500 outline-none transition">
-        <button onclick="login()" class="w-full bg-pink-600 hover:bg-pink-700 p-3 rounded-lg font-bold text-white transition">Access Dashboard</button>
+        <input id="password" type="password" placeholder="Enter Password" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg mb-4 outline-none focus:border-pink-500">
+        <button onclick="login()" class="w-full bg-pink-600 hover:bg-pink-700 p-3 rounded-lg font-bold transition">Access Dashboard</button>
     </div>
 
     <div id="admin-section" style="display:none;" class="glass p-8 rounded-2xl w-full max-w-2xl">
         <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Add New Product</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input id="name" placeholder="Product Name" class="bg-gray-900 border border-gray-700 p-3 rounded-lg focus:border-pink-500 outline-none">
-            <input id="price" placeholder="Price (৳)" class="bg-gray-900 border border-gray-700 p-3 rounded-lg focus:border-pink-500 outline-none">
-            <input id="imgUrl" placeholder="Image URL" class="bg-gray-900 border border-gray-700 p-3 rounded-lg focus:border-pink-500 outline-none md:col-span-2">
-            
-            <button onclick="addProduct()" class="md:col-span-2 bg-violet-600 hover:bg-violet-700 p-4 rounded-lg font-bold text-white transition">Publish Product</button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <input id="name" placeholder="Product Name" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
+            <input id="price" placeholder="Price (৳)" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
+            <input id="imgUrl" placeholder="Image URL" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500 md:col-span-2">
+            <button onclick="addProduct()" class="md:col-span-2 bg-violet-600 hover:bg-violet-700 p-4 rounded-lg font-bold transition">Publish Product</button>
         </div>
-        <button onclick="location.reload()" class="mt-4 text-xs text-gray-500 hover:text-white transition">Logout</button>
+
+        <h2 class="text-xl font-bold mb-4 text-pink-500">Manage Products</h2>
+        <div id="admin-product-list" class="flex flex-col gap-3">
+            </div>
+        <button onclick="location.reload()" class="mt-6 text-xs text-gray-500 hover:text-white underline">Logout</button>
     </div>
 
     <script src="js/admin.js"></script>
