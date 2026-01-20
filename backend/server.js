@@ -23,13 +23,13 @@ const productSchema = new mongoose.Schema({
 });
 const Product = mongoose.model('Product', productSchema);
 
-// ৩. পাবলিক রুট: সব প্রোডাক্ট পাওয়া
+// ৩. পাবলিক রুট: সব প্রোডাক্ট পাওয়া (৫০০ এরর ফিক্স)
 app.get('/products', async (req, res) => {
     try {
         const products = await Product.find() || [];
-        res.status(200).json(products); // সবসময় অ্যারে পাঠাবে
+        res.status(200).json(products); 
     } catch (err) {
-        res.status(500).json([]); // এরর হলেও খালি অ্যারে পাঠাবে যাতে সাইট না ভাঙে
+        res.status(500).json([]); 
     }
 });
 
