@@ -35,7 +35,6 @@ const Banner = mongoose.model('Banner', new mongoose.Schema({
     displayTime: { type: Number, default: 5000 }
 }));
 
-// ১. ইউজার মডেল (পাসওয়ার্ড সরাসরি সেভ হবে)
 const User = mongoose.model('User', new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -43,16 +42,37 @@ const User = mongoose.model('User', new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 }));
 
+// ১. নতুন অর্ডার মডেল (ইউজারের কেনাকাটার তথ্য রাখার জন্য)
+const Order = mongoose.model('Order', new mongoose.Schema({
+    userName: String,
+    userEmail: String,
+    products: Array, // কার্ডের আইটেমগুলো এখানে থাকবে
+    totalAmount: Number,
+    status: { type: String, default: 'Pending' }, // অর্ডার স্ট্যাটাস
+    orderedAt: { type: Date, default: Date.now }
+}));
+
 // --- রুটসমূহ ---
 
-// ২. সাইনআপ রুট (কোনো হ্যাশিং নেই)
+// ২. অর্ডার প্লেস করার রুট
+app.post('/admin/place-order', async (req, res) => {
+    try {
+        const { userName, userEmail, products, totalAmount } = req.body;
+        const newOrder = new Order({ userName, userEmail, products, totalAmount });
+        await newOrder.save();
+        res.status(201).json({ message: "Order placed successfully!", orderId: newOrder._id });
+    } catch (err) {
+        res.status(500).json({ message: "Order failed!" });
+    }
+});
+
 app.post('/auth/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: "Email already exists!" });
 
-        const user = new User({ name, email, password }); // সরাসরি পাসওয়ার্ড সেভ
+        const user = new User({ name, email, password }); 
         await user.save();
         res.status(201).json({ message: "Account created successfully!" });
     } catch (err) {
@@ -60,7 +80,6 @@ app.post('/auth/signup', async (req, res) => {
     }
 });
 
-// ৩. লগইন রুট (সরাসরি টেক্সট তুলনা করা হবে)
 app.post('/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -68,7 +87,6 @@ app.post('/auth/login', async (req, res) => {
         
         if (!user) return res.status(404).json({ message: "User not found!" });
 
-        // ডাটাবেজের পাসওয়ার্ডের সাথে সরাসরি তুলনা
         if (user.password !== password) {
             return res.status(400).json({ message: "Invalid password!" });
         }
@@ -82,7 +100,6 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
-// প্রোডাক্টি ও ব্যানার রুটগুলো আগের মতোই থাকবে
 app.get('/products', async (req, res) => {
     const products = await Product.find();
     res.json(products);
