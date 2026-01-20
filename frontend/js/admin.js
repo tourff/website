@@ -2,28 +2,29 @@ const BASE_URL = 'https://website-production-f869.up.railway.app';
 
 function login() {
     const passwordField = document.getElementById('password').value;
-    
     if (passwordField === 'admin123') {
         alert("লগইন সফল হয়েছে!");
-        // HTML এর ID গুলোর সাথে মিল রাখা হয়েছে
         document.getElementById('login-box').style.display = 'none';
         document.getElementById('panel').style.display = 'block';
     } else {
-        alert("ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।");
+        alert("ভুল পাসওয়ার্ড!");
     }
 }
 
 async function add() {
     const name = document.getElementById('name').value;
     const price = document.getElementById('price').value;
+    const oldPrice = document.getElementById('oldPrice').value;
+    const customDiscount = document.getElementById('customDiscount').value;
+    const description = document.getElementById('description').value;
     const image = document.getElementById('imgUrl').value;
 
     if (!name || !price || !image) {
-        alert("সবগুলো ঘর পূরণ করুন!");
+        alert("নাম, দাম এবং ছবি দেওয়া বাধ্যতামূলক!");
         return;
     }
 
-    const productData = { name, price, image };
+    const productData = { name, price, oldPrice, customDiscount, description, image };
 
     try {
         const response = await fetch(`${BASE_URL}/admin/add-product`, {
@@ -33,13 +34,10 @@ async function add() {
         });
 
         if (response.ok) {
-            alert("প্রোডাক্ট সফলভাবে Turjo Site-এ অ্যাড হয়েছে!");
+            alert("প্রোডাক্ট সফলভাবে অ্যাড হয়েছে!");
             location.reload(); 
-        } else {
-            alert("সার্ভার থেকে এরর এসেছে। রেলওয়ে লগ চেক করুন।");
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("সার্ভারের সাথে যোগাযোগ করা সম্ভব হচ্ছে না!");
+        alert("সার্ভারে ডাটা পাঠানো সম্ভব হয়নি!");
     }
 }
