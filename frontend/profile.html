@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Turjo Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d0915; color: white; }
+        .glass-card { background: rgba(22, 16, 33, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .profile-gradient { background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <nav class="p-4 border-b border-white/5 bg-[#161021]">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:text-rose-500 transition">
+                <i class="fas fa-arrow-left"></i> Back to Store
+            </a>
+            <button onclick="logout()" class="text-rose-500 font-bold text-sm">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 mt-10">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="glass-card rounded-[2rem] overflow-hidden shadow-2xl mb-8">
+                <div class="h-32 profile-gradient relative"></div>
+                <div class="px-8 pb-8 -mt-12">
+                    <div class="flex flex-col md:flex-row items-end gap-6">
+                        <div id="user-avatar" class="w-24 h-24 profile-gradient rounded-full border-4 border-[#0d0915] flex items-center justify-center text-3xl font-black shadow-xl">
+                            </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h1 id="user-name" class="text-2xl font-bold tracking-tight">User Name</h1>
+                            <p class="text-gray-500 text-sm">Premium Account Member</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-center">
+                <div class="glass-card p-6 rounded-2xl">
+                    <p class="text-gray-500 text-xs uppercase tracking-widest mb-2 font-bold">Total Orders</p>
+                    <h3 class="text-2xl font-bold">0</h3>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <p class="text-gray-500 text-xs uppercase tracking-widest mb-2 font-bold">Account Status</p>
+                    <h3 class="text-green-500 text-2xl font-bold">Active</h3>
+                </div>
+            </div>
+
+            <div class="glass-card p-8 rounded-3xl">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+                    <i class="fas fa-cog text-rose-500"></i> Account Settings
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs text-gray-400 ml-1">Display Name</label>
+                        <input type="text" id="edit-name" class="w-full bg-[#1e162e] border border-white/5 p-3 rounded-xl outline-none focus:border-rose-500 transition text-sm">
+                    </div>
+                    <button onclick="updateProfile()" class="bg-rose-600 hover:bg-rose-700 w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg transition">
+                        Update Information
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/profile.js"></script>
+</body>
+</html>
