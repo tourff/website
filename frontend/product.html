@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0712; color: white; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0712; color: white; scroll-behavior: smooth; }
         .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .active-tab { border-bottom: 3px solid #f43f5e; color: #f43f5e; }
         .btn-gradient { background: linear-gradient(90deg, #9333ea, #db2777); }
         .whatsapp-btn { background: #25d366; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -22,38 +24,44 @@
             
             <div class="lg:col-span-7 space-y-8">
                 <div class="glass-card rounded-[2.5rem] p-12 flex flex-col items-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent opacity-30"></div>
-                    <img id="p-image" src="" class="w-full max-w-sm object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105">
+                    <img id="p-image" src="" class="w-full max-h-[400px] object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105">
                     
                     <div class="grid grid-cols-3 w-full border-t border-white/5 mt-10 pt-8 text-center">
-                        <div class="group cursor-default">
+                        <div>
                             <p id="p-sold" class="text-xl font-extrabold tracking-tighter">0+</p>
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Sold Items</p>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Sold</p>
                         </div>
-                        <div class="group cursor-default">
+                        <div>
                             <p class="text-rose-500 text-xl"><i class="fas fa-heart animate-pulse"></i></p>
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Loved by Users</p>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Loved</p>
                         </div>
-                        <div class="group cursor-default">
+                        <div>
                             <p id="p-rating-stat" class="text-xl font-extrabold tracking-tighter">5.0</p>
-                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Avg Rating</p>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Rating</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="glass-card rounded-[2rem] p-8">
                     <div class="flex gap-10 border-b border-white/5 mb-8">
-                        <button class="active-tab pb-4 font-bold text-xs uppercase tracking-widest">Description</button>
-                        <button class="text-gray-500 pb-4 font-bold text-xs uppercase tracking-widest hover:text-white transition">Reviews (1)</button>
+                        <button id="tab-desc-btn" onclick="switchTab('desc')" class="active-tab pb-4 font-bold text-xs uppercase tracking-widest transition">Description</button>
+                        <button id="tab-rev-btn" onclick="switchTab('rev')" class="text-gray-500 pb-4 font-bold text-xs uppercase tracking-widest hover:text-white transition">Reviews (<span id="p-review-count-tab">0</span>)</button>
                     </div>
-                    <div id="p-desc" class="text-sm text-gray-400 leading-loose space-y-4">
+
+                    <div id="p-desc-content" class="text-sm text-gray-400 leading-loose">
                         </div>
+
+                    <div id="p-rev-content" class="hidden space-y-6">
+                        <div id="reviews-list">
+                            <p class="text-gray-500 text-xs italic text-center py-10">No reviews yet for this product.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="lg:col-span-5">
                 <div class="glass-card rounded-[2.5rem] p-10 sticky top-10 border-white/10 shadow-2xl">
-                    <h1 id="p-name" class="text-3xl font-black mb-3 tracking-tight leading-tight">Product Name</h1>
+                    <h1 id="p-name" class="text-3xl font-black mb-3 tracking-tight">Product Name</h1>
                     
                     <div class="flex items-center gap-3 mb-8">
                         <div id="p-stars" class="flex gap-1 text-[10px]">
@@ -75,8 +83,8 @@
                         <div>
                             <label class="text-[10px] font-black text-gray-500 block mb-3 uppercase tracking-[0.2em]">Select Plan:</label>
                             <select class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-xs font-bold focus:border-rose-500 transition cursor-pointer">
-                                <option class="bg-[#0b0712]">Standard Plan — 1 Month</option>
-                                <option class="bg-[#0b0712]">Premium Plan — 12 Months</option>
+                                <option class="bg-[#0b0712]">Standard Plan — Monthly</option>
+                                <option class="bg-[#0b0712]">Premium Plan — Yearly</option>
                             </select>
                         </div>
 
@@ -98,22 +106,16 @@
                         </button>
                     </div>
 
-                    <div class="mt-8 pt-8 border-t border-white/5 flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500"><i class="fas fa-bolt"></i></div>
-                        <div>
-                            <p class="text-[11px] font-black uppercase tracking-tighter">Instant Delivery</p>
-                            <p class="text-[9px] text-gray-500">Via WhatsApp within minutes</p>
-                        </div>
+                    <div class="mt-8 pt-8 border-t border-white/5 flex items-center gap-4 text-xs font-bold uppercase tracking-tighter">
+                        <i class="fas fa-bolt text-blue-500 text-lg"></i>
+                        <span>Instant Delivery within minutes</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="mt-32">
-            <div class="flex items-baseline gap-4 mb-10">
-                <h2 class="text-2xl font-black uppercase tracking-tighter">Related Products</h2>
-                <div class="h-1 flex-1 bg-white/5 rounded-full"></div>
-            </div>
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-10">Related Products</h2>
             <div id="related-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 </div>
         </div>
