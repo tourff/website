@@ -42,19 +42,59 @@ const User = mongoose.model('User', new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 }));
 
-// ১. নতুন অর্ডার মডেল (ইউজারের কেনাকাটার তথ্য রাখার জন্য)
 const Order = mongoose.model('Order', new mongoose.Schema({
     userName: String,
     userEmail: String,
-    products: Array, // কার্ডের আইটেমগুলো এখানে থাকবে
+    products: Array, 
     totalAmount: Number,
-    status: { type: String, default: 'Pending' }, // অর্ডার স্ট্যাটাস
+    status: { type: String, default: 'Pending' }, 
     orderedAt: { type: Date, default: Date.now }
 }));
 
 // --- রুটসমূহ ---
 
-// ২. অর্ডার প্লেস করার রুট
+// ১. এডমিন প্যানেলের জন্য অর্ডার লিস্ট ফেচ করা (ভিডিওর মতো)
+app.get('/orders', async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ orderedAt: -1 }); // নতুন অর্ডার সবার উপরে দেখাবে
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: "Orders fetch failed!" });
+    }
+});
+
+// ২. অর্ডার স্ট্যাটাস আপডেট করার রুট (যেমন: Pending থেকে Success করা)
+app.patch('/admin/update-order/:id', async (req, res) => {
+    try {
+        const { status } = req.body;
+        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        res.json(updatedOrder);
+    } catch (err) {
+        res.status(500).json({ message: "Update failed!" });
+    }
+});
+
+// ৩. অর্ডার ডিলিট করার রুট
+app.delete('/admin/delete-order/:id', async (req, res) => {
+    try {
+        await Order.findByIdAndDelete(req.params.id);
+        res.json({ message: "Order deleted successfully!" });
+    } catch (err) {
+        res.status(500).json({ message: "Delete failed!" });
+    }
+});
+
+// ৪. ইউজারের সংখ্যা দেখার রুট
+app.get('/users/count', async (req, res) => {
+    try {
+        const count = await User.countDocuments();
+        res.json({ count });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// অর্ডার প্লেস করার রুট (কাস্টমার সাইড)
 app.post('/admin/place-order', async (req, res) => {
     try {
         const { userName, userEmail, products, totalAmount } = req.body;
@@ -66,12 +106,12 @@ app.post('/admin/place-order', async (req, res) => {
     }
 });
 
+// অথেনটিকেশন রুটসমূহ
 app.post('/auth/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: "Email already exists!" });
-
         const user = new User({ name, email, password }); 
         await user.save();
         res.status(201).json({ message: "Account created successfully!" });
@@ -84,22 +124,16 @@ app.post('/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-        
-        if (!user) return res.status(404).json({ message: "User not found!" });
-
-        if (user.password !== password) {
-            return res.status(400).json({ message: "Invalid password!" });
+        if (!user || user.password !== password) {
+            return res.status(400).json({ message: "Invalid credentials!" });
         }
-
-        res.json({ 
-            message: "Login successful", 
-            user: { name: user.name, email: user.email } 
-        });
+        res.json({ message: "Login successful", user: { name: user.name, email: user.email } });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
+// প্রোডাক্ট রুটসমূহ
 app.get('/products', async (req, res) => {
     const products = await Product.find();
     res.json(products);
@@ -125,6 +159,7 @@ app.delete('/admin/delete-product/:id', async (req, res) => {
     res.json({ message: "Product deleted" });
 });
 
+// ব্যানার রুটসমূহ
 app.get('/banners', async (req, res) => {
     const banners = await Banner.find();
     res.json(banners);
