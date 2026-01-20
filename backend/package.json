@@ -1,7 +1,7 @@
 {
   "name": "turjo-site-backend",
   "version": "1.0.0",
-  "description": "Full-stack e-commerce backend for Turjo Site",
+  "description": "Backend for Turjo Site with Railway and MongoDB",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,7 +14,7 @@
     "mongoose": "^8.9.5"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "author": "Turjo",
   "license": "ISC"
