@@ -3,69 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turjo Site | Premium Digital Store</title>
+    <title>Turjo Site | Premium Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        body { background-color: #0b0e14; font-family: 'Inter', sans-serif; }
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .glass-card:hover {
-            border-color: #f43f5e;
-            transform: scale(1.03);
-            box-shadow: 0 15px 35px rgba(244, 63, 94, 0.15);
-        }
-        .nav-glass {
-            background: rgba(15, 18, 26, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.3s; }
+        .dark body { background-color: #030712; color: #f3f4f6; }
+        .light body { background-color: #f9fafb; color: #111827; }
+        .btn-primary { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
     </style>
 </head>
-<body class="text-gray-100">
-
-    <nav class="nav-glass sticky top-0 z-50 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-white p-2 rounded-xl">
-                    <i class="fas fa-layer-group text-black text-xl"></i>
-                </div>
-                <span class="text-xl font-black tracking-tighter uppercase">TURJO SITE</span>
+<body class="dark">
+    <nav class="sticky top-0 z-50 backdrop-blur-md dark:bg-[#030712]/80 dark:border-b dark:border-white/5 light:bg-white/80 light:border-b light:border-gray-200">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 btn-primary rounded-lg flex items-center justify-center"><i class="fas fa-bolt text-white text-sm"></i></div>
+                <span class="text-xl font-extrabold tracking-tight dark:text-white light:text-gray-900">TURJO<span class="text-rose-500">SITE</span></span>
             </div>
-            <div class="flex items-center gap-6">
-                <div class="hidden md:flex relative">
-                    <input type="text" placeholder="Search product..." class="bg-[#161b26] border border-gray-700 rounded-full px-5 py-2 text-sm w-72 focus:outline-none focus:border-pink-500 transition">
-                    <i class="fas fa-search absolute right-4 top-3 text-gray-500"></i>
-                </div>
-                <a href="admin.html" class="text-xs font-medium text-gray-400 hover:text-white transition">ADMIN</a>
-                <button class="bg-[#db2777] hover:bg-[#be185d] px-5 py-2 rounded-xl font-bold flex items-center gap-2 transition shadow-lg shadow-pink-900/20">
-                    <i class="fas fa-shopping-basket"></i> ৳0
-                </button>
-            </div>
+            <button onclick="toggleTheme()" class="bg-gray-500/10 p-2.5 rounded-full transition"><i id="theme-icon" class="fas fa-moon text-rose-500"></i></button>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 py-12">
-        <div class="flex flex-col mb-10">
-            <h2 class="text-2xl font-bold border-l-4 border-pink-500 pl-4 mb-2">All Products</h2>
-            <p class="text-gray-500 text-xs pl-5">Premium digital services & accounts</p>
+    <div class="container mx-auto px-6 pt-10">
+        <div class="max-w-2xl mx-auto relative">
+            <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search services..." class="w-full py-4 px-12 rounded-2xl border transition outline-none dark:bg-white/5 dark:border-white/10 dark:text-white light:bg-white light:border-gray-200 light:text-gray-900 shadow-xl">
+            <i class="fas fa-search absolute left-5 top-5 text-gray-500"></i>
         </div>
-        
-        <div id="products-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            <div class="h-64 glass-card animate-pulse rounded-2xl"></div>
-            <div class="h-64 glass-card animate-pulse rounded-2xl"></div>
-            <div class="h-64 glass-card animate-pulse rounded-2xl"></div>
-        </div>
+    </div>
+
+    <main class="container mx-auto px-6 py-12">
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
     </main>
 
-    <footer class="py-10 text-center text-gray-600 text-xs border-t border-gray-900 mt-20">
-        &copy; 2026 Turjo Site. All Rights Reserved.
-    </footer>
-
     <script src="js/main.js"></script>
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (body.classList.contains('dark')) {
+                body.classList.replace('dark', 'light'); icon.classList.replace('fa-moon', 'fa-sun'); localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.replace('light', 'dark'); icon.classList.replace('fa-sun', 'fa-moon'); localStorage.setItem('theme', 'dark');
+            }
+        }
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.className = savedTheme;
+            document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'fas fa-moon text-rose-500' : 'fas fa-sun text-rose-500';
+        }
+    </script>
 </body>
 </html>
