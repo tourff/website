@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcryptjs'); // পাসওয়ার্ড হ্যাশ করার জন্য
 require('dotenv').config();
 
 const app = express();
@@ -16,19 +17,19 @@ mongoose.connect(mongoURI)
 
 // --- মডলেসমূহ ---
 
-// ১. প্রোডাক্ট মডেল (নতুন ফিল্ডসমূহ যুক্ত করা হয়েছে)
+// ১. প্রোডাক্ট মডেল
 const Product = mongoose.model('Product', new mongoose.Schema({
     name: String, 
     price: Number, 
     oldPrice: Number, 
     image: String, 
     inStock: { type: Boolean, default: true },
-    stockQuantity: { type: Number, default: 99 }, // স্টকে কতগুলো আছে
-    soldCount: { type: Number, default: 0 },      // কতগুলো বিক্রি হয়েছে
-    ratings: { type: Number, default: 5.0 },     // রেটিং
-    reviews: { type: Number, default: 0 },       // কতজন রিভিউ দিয়েছে
-    description: String,                          // বিস্তারিত বর্ণনা
-    category: String                             // ক্যাটাগরি (রিলেটেড প্রোডাক্টের জন্য)
+    stockQuantity: { type: Number, default: 99 },
+    soldCount: { type: Number, default: 0 },
+    ratings: { type: Number, default: 5.0 },
+    reviews: { type: Number, default: 0 },
+    description: String,
+    category: String
 }));
 
 // ২. ব্যানার মডেল
@@ -37,33 +38,70 @@ const Banner = mongoose.model('Banner', new mongoose.Schema({
     displayTime: { type: Number, default: 5000 }
 }));
 
+// ৩. ইউজার মডেল (নতুন যুক্ত করা হয়েছে)
+const User = mongoose.model('User', new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+}));
+
 // --- রুটসমূহ ---
 
-// ১. প্রোডাক্ট রুটসমূহ
+// ১. অথেনটিকেশন রুটসমূহ (SIGNUP & LOGIN)
+app.post('/auth/signup', async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        
+        // চেক করা ইউজার আগে থেকেই আছে কি না
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: "Email already exists!" });
+
+        // পাসওয়ার্ড হ্যাশ করা
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const user = new User({ name, email, password: hashedPassword });
+        await user.save();
+        res.status(201).json({ message: "Account created successfully!" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.post('/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        
+        if (!user) return res.status(404).json({ message: "User not found!" });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: "Invalid credentials!" });
+
+        res.json({ 
+            message: "Login successful", 
+            user: { name: user.name, email: user.email } 
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ২. প্রোডাক্ট রুটসমূহ
 app.get('/products', async (req, res) => {
     const products = await Product.find();
     res.json(products);
 });
 
 app.post('/admin/add-product', async (req, res) => {
-    // নতুন ফিল্ডগুলো বডি থেকে নেওয়া হচ্ছে
-    const { name, price, oldPrice, image, description, stockQuantity, soldCount, ratings, reviews, category } = req.body;
-    const product = new Product({ 
-        name, price, oldPrice, image, description, stockQuantity, soldCount, ratings, reviews, category 
-    });
+    const product = new Product(req.body);
     await product.save();
     res.status(201).json(product);
 });
 
-// ৩. প্রোডাক্ট এডিট করার রুট
 app.put('/admin/edit-product/:id', async (req, res) => {
     try {
-        const updateData = req.body; // সব ডাটা একসাথে আপডেট করার জন্য
-        const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id, 
-            updateData, 
-            { new: true }
-        );
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedProduct);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -82,15 +120,14 @@ app.patch('/admin/toggle-stock/:id', async (req, res) => {
     res.json(product);
 });
 
-// ২. ব্যানার রুটসমূহ
+// ৩. ব্যানার রুটসমূহ
 app.get('/banners', async (req, res) => {
     const banners = await Banner.find();
     res.json(banners);
 });
 
 app.post('/admin/add-banner', async (req, res) => {
-    const { imageUrl, displayTime } = req.body;
-    const banner = new Banner({ imageUrl, displayTime });
+    const banner = new Banner(req.body);
     await banner.save();
     res.status(201).json(banner);
 });
