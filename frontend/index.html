@@ -1,71 +1,62 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turjo Site | Digital Products</title>
+    <title>Products Hub BD | Digital Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f0a19; color: white; }
-        .nav-glass { background: #161021; border-bottom: 1px solid #251d33; }
-        .search-bg { background: #251d33; border: 1px solid #362b4d; }
-        .product-card { background: #161021; border-radius: 12px; overflow: hidden; border: 1px solid #251d33; transition: 0.3s; }
-        .product-card:hover { border-color: #f43f5e; transform: translateY(-5px); }
-        .badge-discount { background: #f43f5e; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0d0915; color: white; }
+        .nav-bg { background: #161021; border-bottom: 1px solid #251d33; }
+        .search-box { background: #1e162e; border: 1px solid #2d2341; }
+        .card-bg { background: #161021; border: 1px solid #251d33; }
+        .badge-rose { background: #f43f5e; color: white; border-radius: 4px; }
+        .cart-btn { background: linear-gradient(90deg, #9333ea, #db2777); }
     </style>
 </head>
 <body>
 
-    <nav class="nav-glass sticky top-0 z-50 py-3">
+    <nav class="nav-bg sticky top-0 z-50 py-3">
         <div class="container mx-auto px-4 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-2">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                    <i class="fas fa-bolt text-black text-xl"></i>
+                    <i class="fas fa-box-open text-black text-xl"></i>
                 </div>
-                <div class="hidden md:block">
-                    <h1 class="font-bold text-lg leading-tight uppercase">Turjo Site</h1>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">Digital Products</p>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight uppercase tracking-tighter">Products Hub BD</h1>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest">Digital Products</p>
                 </div>
             </div>
 
-            <div class="flex-1 max-w-2xl relative">
+            <div class="flex-1 max-w-xl relative hidden md:block">
                 <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for ChatGPT Plus, Canva Pro, VPN..." 
-                    class="w-full search-bg py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition">
-                <i class="fas fa-search absolute left-3.5 top-3 text-gray-500"></i>
+                    class="w-full search-box py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition">
+                <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-500 text-xs"></i>
             </div>
 
-            <div class="flex items-center gap-3 md:gap-5 shrink-0 text-sm font-medium">
-                <a href="#" class="hidden lg:flex items-center gap-2 hover:text-rose-500 transition">
-                    <i class="far fa-comment-dots"></i> Support
-                </a>
-                <div id="nav-auth-section">
-                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition">
-                        <i class="far fa-user"></i> Login
-                    </a>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <a href="#" class="hidden lg:flex items-center gap-2 hover:text-rose-500"><i class="fas fa-headset"></i> Support</a>
+                <div id="auth-nav">
+                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500"><i class="far fa-user"></i> Login</a>
                 </div>
-                <div class="hidden sm:flex items-center gap-1 border-l border-white/10 pl-3">
-                    ৳ BDT <i class="fas fa-chevron-down text-[10px] ml-1"></i>
-                </div>
-                <button class="bg-rose-600 hover:bg-rose-700 p-2.5 px-4 rounded-lg flex items-center gap-2 transition shadow-lg shadow-rose-600/20">
+                <div class="hidden sm:flex items-center gap-1 border-l border-white/10 pl-4">৳ BDT <i class="fas fa-chevron-down text-[8px] ml-1"></i></div>
+                <button class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20">
                     <i class="fas fa-shopping-cart"></i> ৳0
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-10">
         <div class="flex items-center justify-between mb-8">
             <div>
                 <h2 class="text-2xl font-bold">All Products</h2>
-                <p id="product-count" class="text-sm text-gray-500 mt-1">0 items</p>
+                <p id="item-count" class="text-xs text-gray-500 mt-1">0 items</p>
             </div>
-            <div class="flex items-center gap-2 bg-[#161021] border border-[#251d33] p-2 px-4 rounded-lg cursor-pointer text-sm">
-                Default <i class="fas fa-chevron-down text-[10px] text-gray-500"></i>
+            <div class="bg-[#161021] border border-[#251d33] p-2 px-4 rounded-lg text-xs cursor-pointer flex items-center gap-2">
+                Default <i class="fas fa-chevron-down text-[8px] text-gray-500"></i>
             </div>
         </div>
 
