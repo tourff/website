@@ -119,7 +119,7 @@ function loadReviews() {
 function buyViaWhatsApp() {
     const total = currentProduct.price * quantity;
     const msg = `*--- NEW ORDER ---*\n📦 *Product:* ${currentProduct.name}\n🔢 *Quantity:* ${quantity}\n💰 *Total:* ৳${total}\n\n_I want to purchase this item!_`;
-    window.open(`https://wa.me/8801XXXXXXXXX?text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(`https://wa.me/8801847853867?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function handleAddToCart() {
