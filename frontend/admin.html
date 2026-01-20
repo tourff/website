@@ -19,6 +19,7 @@
     </div>
 
     <div id="admin-section" style="display:none;" class="glass p-8 rounded-2xl w-full max-w-2xl">
+        
         <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Add New Product</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <input id="name" placeholder="Product Name" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
@@ -27,10 +28,30 @@
             <button onclick="addProduct()" class="md:col-span-2 bg-violet-600 hover:bg-violet-700 p-4 rounded-lg font-bold transition">Publish Product</button>
         </div>
 
-        <h2 class="text-xl font-bold mb-4 text-pink-500">Manage Products</h2>
-        <div id="admin-product-list" class="flex flex-col gap-3">
+        <h2 class="text-2xl font-bold mb-6 text-white border-b border-gray-700 pb-2">Manage Banners</h2>
+        <div class="grid grid-cols-1 gap-4 mb-8">
+            <input id="bannerUrl" placeholder="Banner Image URL" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
+            <input id="displayTime" type="number" placeholder="Display Time (ms) - e.g. 5000" class="bg-gray-900 border border-gray-700 p-3 rounded-lg outline-none focus:border-pink-500">
+            <button onclick="addBanner()" class="bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold transition">Add Banner</button>
+        </div>
+
+        <hr class="border-gray-800 mb-8">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h2 class="text-xl font-bold mb-4 text-pink-500">Products</h2>
+                <div id="admin-product-list" class="flex flex-col gap-3 text-xs">
+                    </div>
             </div>
-        <button onclick="location.reload()" class="mt-6 text-xs text-gray-500 hover:text-white underline">Logout</button>
+
+            <div>
+                <h2 class="text-xl font-bold mb-4 text-blue-500">Banners</h2>
+                <div id="admin-banner-list" class="flex flex-col gap-3">
+                    </div>
+            </div>
+        </div>
+
+        <button onclick="location.reload()" class="mt-10 text-xs text-gray-500 hover:text-white underline">Logout</button>
     </div>
 
     <script src="js/admin.js"></script>
