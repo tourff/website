@@ -8,7 +8,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0712; color: white; scroll-behavior: smooth; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0712; color: white; scroll-behavior: smooth; overflow-x: hidden; }
+        
+        /* Sticky Header Styles */
+        .nav-bg { 
+            background: rgba(22, 16, 33, 0.9); 
+            backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        .search-box { background: #1e162e; border: 1px solid #2d2341; }
+        .cart-btn { background: linear-gradient(90deg, #9333ea, #db2777); }
+        
+        /* Profile Dropdown */
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: #1e162e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 10px;
+            width: 200px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            z-index: 1001;
+        }
+        .profile-dropdown.active { display: block; animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
         .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .active-tab { border-bottom: 3px solid #f43f5e; color: #f43f5e; }
         .btn-gradient { background: linear-gradient(90deg, #9333ea, #db2777); }
@@ -18,6 +45,76 @@
     </style>
 </head>
 <body class="min-h-screen">
+
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-[320px] bg-[#161021] border-l border-[#251d33] translate-x-full transition-transform duration-300 z-[1002] shadow-2xl flex flex-col">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <h2 class="text-lg font-bold uppercase tracking-tight">Your Cart</h2>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4"></div>
+        <div class="p-6 border-t border-white/5 bg-[#0d0915]">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-gray-400 text-sm">Total Amount:</span>
+                <span id="cart-total" class="text-rose-500 font-bold text-lg">৳0</span>
+            </div>
+            <button onclick="checkout()" class="w-full cart-btn py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-pink-500/20 text-white transition active:scale-95">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[1001]"></div>
+
+    <nav class="nav-bg sticky top-0 z-[1000] py-3">
+        <div class="container mx-auto px-4 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 shrink-0 cursor-pointer active:scale-95 transition" onclick="window.location.href='index.html'">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                    <i class="fas fa-bolt text-black text-xl"></i>
+                </div>
+                <div class="hidden md:block">
+                    <h1 class="font-bold text-lg leading-tight uppercase tracking-tighter text-white">Turjo Site</h1>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest">Premium Store</p>
+                </div>
+            </div>
+
+            <div class="flex-1 max-w-xl relative hidden md:block group">
+                <input type="text" id="search-input" placeholder="Search products..." 
+                    class="w-full search-box py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition text-white">
+                <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-500 text-xs"></i>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <button onclick="toggleCart()" class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20 text-white transition active:scale-95">
+                    <i class="fas fa-shopping-cart"></i> <span id="cart-count-btn">৳0</span>
+                </button>
+
+                <div id="auth-nav" class="border-l border-white/10 pl-4 relative">
+                    <div id="guest-ui">
+                        <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition text-[11px] uppercase tracking-widest">
+                            <i class="far fa-user text-lg text-rose-500"></i> Login
+                        </a>
+                    </div>
+                    <div id="user-ui" class="hidden relative">
+                        <button onclick="toggleProfileMenu()" class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition">
+                            <div class="w-6 h-6 bg-gradient-to-br from-rose-500 to-pink-600 rounded-md flex items-center justify-center text-[10px]">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <span id="display-user-name" class="max-w-[70px] truncate text-[11px] text-white">User</span>
+                            <i class="fas fa-chevron-down text-[8px] text-gray-500"></i>
+                        </button>
+                        <div id="profile-dropdown" class="profile-dropdown">
+                            <div class="px-3 py-2 border-b border-white/5 mb-2 text-left">
+                                <p class="text-[8px] text-gray-500 uppercase font-bold tracking-widest">Account Info</p>
+                                <p id="user-email-text" class="text-[10px] truncate text-rose-400 font-medium">user@mail.com</p>
+                            </div>
+                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition flex items-center gap-2 text-[11px] font-bold">
+                                <i class="fas fa-sign-out-alt"></i> LOGOUT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <div class="container mx-auto px-4 py-10 lg:py-20">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -48,8 +145,7 @@
                         <button id="tab-rev-btn" onclick="switchTab('rev')" class="text-gray-500 pb-4 font-bold text-xs uppercase tracking-widest hover:text-white transition">Reviews (<span id="p-review-count-tab">0</span>)</button>
                     </div>
 
-                    <div id="p-desc-content" class="text-sm text-gray-400 leading-loose">
-                        </div>
+                    <div id="p-desc-content" class="text-sm text-gray-400 leading-loose"></div>
 
                     <div id="p-rev-content" class="hidden space-y-6">
                         <div id="reviews-list">
@@ -60,12 +156,11 @@
             </div>
 
             <div class="lg:col-span-5">
-                <div class="glass-card rounded-[2.5rem] p-10 sticky top-10 border-white/10 shadow-2xl">
+                <div class="glass-card rounded-[2.5rem] p-10 sticky top-24 border-white/10 shadow-2xl">
                     <h1 id="p-name" class="text-3xl font-black mb-3 tracking-tight">Product Name</h1>
                     
                     <div class="flex items-center gap-3 mb-8">
-                        <div id="p-stars" class="flex gap-1 text-[10px]">
-                            </div>
+                        <div id="p-stars" class="flex gap-1 text-[10px]"></div>
                         <span id="p-review-count" class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">(0 reviews)</span>
                     </div>
 
@@ -75,28 +170,11 @@
                             <span id="p-old-price" class="text-lg text-gray-600 line-through font-bold"></span>
                         </div>
                         <p id="p-stock" class="text-[10px] text-green-500 mt-3 font-black uppercase tracking-widest flex items-center gap-2">
-                            <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> In Stock (99 available)
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> In Stock
                         </p>
                     </div>
 
                     <div class="space-y-6">
-                        <div>
-                            <label class="text-[10px] font-black text-gray-500 block mb-3 uppercase tracking-[0.2em]">Select Plan:</label>
-                            <select class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-xs font-bold focus:border-rose-500 transition cursor-pointer">
-                                <option class="bg-[#0b0712]">Standard Plan — Monthly</option>
-                                <option class="bg-[#0b0712]">Premium Plan — Yearly</option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-2xl">
-                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Quantity:</span>
-                            <div class="flex items-center gap-6">
-                                <button onclick="updateQuantity(-1)" class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition">-</button>
-                                <span id="qty-value" class="font-black text-sm">1</span>
-                                <button onclick="updateQuantity(1)" class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-rose-500 transition">+</button>
-                            </div>
-                        </div>
-
                         <button onclick="handleAddToCart()" class="w-full btn-gradient py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-pink-900/20 active:scale-[0.98] transition">
                             <i class="fas fa-shopping-cart mr-2"></i> Add To Cart
                         </button>
@@ -116,11 +194,65 @@
 
         <div class="mt-32">
             <h2 class="text-2xl font-black uppercase tracking-tighter mb-10">Related Products</h2>
-            <div id="related-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                </div>
+            <div id="related-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
         </div>
     </div>
 
+    <footer class="bg-[#0b0712] border-t border-white/5 pt-20 pb-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <div class="space-y-6">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-white rounded flex items-center justify-center">
+                            <i class="fas fa-bolt text-black text-lg"></i>
+                        </div>
+                        <h2 class="text-xl font-black uppercase tracking-tighter">Products Hub BD</h2>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed max-w-xs">Bangladesh's most trusted marketplace for verified digital products.</p>
+                </div>
+                </div>
+            <div class="text-center mt-12">
+                <p class="text-[9px] text-gray-600 uppercase tracking-[0.3em]">© 2026 Products Hub BD. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleProfileMenu() { document.getElementById('profile-dropdown').classList.toggle('active'); }
+        
+        function checkLoginStatus() {
+            const userName = localStorage.getItem('userName');
+            const userEmail = localStorage.getItem('userEmail');
+            const guestUI = document.getElementById('guest-ui');
+            const userUI = document.getElementById('user-ui');
+
+            if (userName) {
+                guestUI.classList.add('hidden');
+                userUI.classList.remove('hidden');
+                document.getElementById('display-user-name').innerText = userName;
+                document.getElementById('user-email-text').innerText = userEmail;
+            } else {
+                guestUI.classList.remove('hidden');
+                userUI.classList.add('hidden');
+            }
+        }
+
+        function handleLogout() {
+            if(confirm("Logout from your account?")) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            if (document.getElementById('user-ui') && !document.getElementById('user-ui').contains(e.target)) {
+                document.getElementById('profile-dropdown').classList.remove('active');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+    </script>
+    <script src="js/main.js"></script>
     <script src="js/product-details.js"></script>
 </body>
 </html>
