@@ -27,10 +27,13 @@ function toggleCart() {
 
 function addToCart(productId) {
     const product = allProducts.find(p => p._id === productId);
-    if (product) {
+    // স্টক চেক করে কার্টে যোগ করা
+    if (product && product.inStock !== false) {
         cart.push(product);
         updateCartUI();
         if(document.getElementById('cart-sidebar').classList.contains('translate-x-full')) toggleCart();
+    } else {
+        alert("This product is currently out of stock!");
     }
 }
 
@@ -61,7 +64,7 @@ function checkout() {
     cart.forEach((item, i) => { message += `${i + 1}. ${item.name} - ৳${item.price}\n`; });
     const total = cart.reduce((sum, item) => sum + item.price, 0);
     message += `\n💰 *Total Amount:* ৳${total}\n\n_Please process my order!_`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank'); //
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
 }
 
 // ৩. স্লাইডার ও ডাটা ফেচ
@@ -69,6 +72,7 @@ let currentSlide = 0;
 function showSlide(index) {
     const slider = document.getElementById('slider');
     const slides = slider.querySelectorAll('img');
+    if (!slides.length) return;
     if (index >= slides.length) currentSlide = 0; else if (index < 0) currentSlide = slides.length - 1; else currentSlide = index;
     slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
@@ -89,19 +93,31 @@ function displayProducts(products) {
     const countLabel = document.getElementById('item-count');
     container.innerHTML = '';
     countLabel.innerText = `${products.length} items`;
+    
     products.forEach(p => {
-        const discount = p.customDiscount || (p.oldPrice ? `-${Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%` : null);
+        const discount = p.oldPrice ? `-${Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%` : null;
+        
+        // স্টক অনুযায়ী বাটন তৈরি করা
+        const actionBtn = p.inStock !== false 
+            ? `<button onclick="addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">Add to Cart</button>`
+            : `<button class="w-full bg-gray-800 text-gray-500 text-[10px] font-bold py-2 rounded-lg border border-white/5 cursor-not-allowed uppercase" disabled>Out of Stock</button>`;
+
         container.innerHTML += `
             <div class="card-bg flex flex-col group rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:border-rose-500 border border-transparent">
                 <div class="relative bg-gradient-to-b from-[#3a1a2e] to-transparent p-10 md:p-12 aspect-square flex items-center justify-center">
                     ${discount ? `<div class="absolute top-3 left-3 z-10 badge-rose text-[9px] font-black px-2 py-1">${discount}</div>` : ''}
-                    <div class="absolute top-3 right-3 text-gray-600 text-[10px]"><i class="fas fa-heart"></i> 1</div>
                     <img src="${p.image}" class="w-full h-full object-contain z-10 group-hover:scale-110 transition duration-700">
                     <div class="absolute inset-5 bg-white/5 rounded-2xl border border-white/5 pointer-events-none"></div>
                 </div>
                 <div class="p-4 bg-[#130d1d] flex flex-col gap-3">
-                    <div><h3 class="text-[11px] font-bold text-gray-400 mb-1 truncate">${p.name}</h3><div class="flex items-center gap-2"><span class="text-rose-500 font-black text-sm">৳${p.price}</span>${p.oldPrice ? `<span class="text-[10px] text-gray-600 line-through">৳${p.oldPrice}</span>` : ''}</div></div>
-                    <button onclick="addToCart('${p._id}')" class="w-full bg-white/5 hover:bg-rose-600 text-[10px] font-bold py-2 rounded-lg transition-all border border-white/10 hover:border-rose-600 uppercase">Add to Cart</button>
+                    <div>
+                        <h3 class="text-[11px] font-bold text-gray-400 mb-1 truncate">${p.name}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-rose-500 font-black text-sm">৳${p.price}</span>
+                            ${p.oldPrice ? `<span class="text-[10px] text-gray-600 line-through">৳${p.oldPrice}</span>` : ''}
+                        </div>
+                    </div>
+                    ${actionBtn}
                 </div>
             </div>`;
     });
