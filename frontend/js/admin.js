@@ -1,5 +1,5 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
-let editingProductId = null; // বর্তমানে কোনো প্রোডাক্ট এডিট হচ্ছে কি না তা ট্র্যাক করার জন্য
+let editingProductId = null; 
 
 // ১. ট্যাব সুইচিং লজিক
 function showTab(tabId) {
@@ -9,7 +9,7 @@ function showTab(tabId) {
     document.getElementById('btn-' + tabId).classList.add('active');
 }
 
-// ২. স্ট্যাটাস মেসেজ দেখানোর ফাংশন
+// ২. স্ট্যাটাস মেসেজ
 function showMsg(msgId, text, isError = false) {
     const el = document.getElementById(msgId);
     el.innerText = text;
@@ -58,28 +58,35 @@ async function addProduct() {
     const method = editingProductId ? 'PUT' : 'POST';
 
     try {
-        await fetch(url, {
+        const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(productData)
         });
         
-        showMsg('action-msg', editingProductId ? 'Product Updated!' : 'Product Published!');
-        resetProductForm(); 
-        loadAdminProducts(); 
+        if(res.ok) {
+            showMsg('action-msg', editingProductId ? 'Product Updated!' : 'Product Published!');
+            resetProductForm(); 
+            loadAdminProducts(); 
+        } else {
+            showMsg('action-msg', 'Server Error!', true);
+        }
     } catch (err) {
-        showMsg('action-msg', 'Error processing request', true);
+        showMsg('action-msg', 'Network Error!', true);
     }
 }
 
-// এডিট মোড শুরু করার ফাংশন
+// এডিট মোড শুরু (ফিক্সড: ডেসক্রিপশন এরর হ্যান্ডলিং)
 function startEdit(id, name, price, oldPrice, image, description, soldCount, ratings, stockQty, cat) {
     editingProductId = id;
     document.getElementById('name').value = name;
     document.getElementById('price').value = price;
     document.getElementById('oldPrice').value = oldPrice || '';
     document.getElementById('imgUrl').value = image;
-    document.getElementById('description').value = description || '';
+    
+    // ডেসক্রিপশনে নিউ লাইন থাকলে তা ঠিকভাবে দেখানোর জন্য
+    document.getElementById('description').value = description ? decodeURIComponent(description) : '';
+    
     document.getElementById('soldCount').value = soldCount || '';
     document.getElementById('ratings').value = ratings || '';
     document.getElementById('stockQuantity').value = stockQty || '';
@@ -90,7 +97,7 @@ function startEdit(id, name, price, oldPrice, image, description, soldCount, rat
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ফর্ম রিসেট ফাংশন
+// ফর্ম রিসেট
 function resetProductForm() {
     editingProductId = null;
     document.getElementById('name').value = '';
@@ -109,7 +116,12 @@ async function loadAdminProducts() {
     const res = await fetch(`${BASE_URL}/products`);
     const products = await res.json();
     const list = document.getElementById('admin-product-list');
-    list.innerHTML = products.map(p => `
+    
+    list.innerHTML = products.map(p => {
+        // ডেসক্রিপশন টেক্সটকে নিরাপদ করার জন্য এনকোড করা হচ্ছে
+        const safeDesc = p.description ? encodeURIComponent(p.description) : "";
+        
+        return `
         <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
             <div class="flex items-center gap-3">
                 <img src="${p.image}" class="w-8 h-8 object-contain">
@@ -119,11 +131,12 @@ async function loadAdminProducts() {
                 </div>
             </div>
             <div class="flex gap-1">
-                <button onclick="startEdit('${p._id}', '${p.name}', ${p.price}, ${p.oldPrice || 0}, '${p.image}', '${p.description || ''}', ${p.soldCount || 0}, ${p.ratings || 5.0}, ${p.stockQuantity || 0}, '${p.category || ''}')" class="text-yellow-500 hover:bg-yellow-500/10 p-2 rounded-lg transition"><i class="fas fa-edit text-[10px]"></i></button>
+                <button onclick="startEdit('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.oldPrice || 0}, '${p.image}', '${safeDesc}', ${p.soldCount || 0}, ${p.ratings || 5.0}, ${p.stockQuantity || 0}, '${p.category || ''}')" class="text-yellow-500 hover:bg-yellow-500/10 p-2 rounded-lg transition"><i class="fas fa-edit text-[10px]"></i></button>
                 <button onclick="toggleStock('${p._id}')" class="text-blue-500 hover:bg-blue-500/10 p-2 rounded-lg transition"><i class="fas fa-sync-alt text-[10px]"></i></button>
                 <button onclick="deleteProduct('${p._id}')" class="text-rose-500 hover:bg-rose-500/10 p-2 rounded-lg transition"><i class="fas fa-trash-alt text-[10px]"></i></button>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 
 // ৫. ব্যানার ম্যানেজমেন্ট
