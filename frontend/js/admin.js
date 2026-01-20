@@ -1,6 +1,21 @@
 // আপনার রেলওয়ে পাবলিক ইউআরএল
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 
+// ১. লগইন ফাংশন (এটি না থাকলে এরর আসবে)
+function login() {
+    const passwordField = document.getElementById('password').value;
+    
+    // আপনার আগের সেট করা পাসওয়ার্ড
+    if (passwordField === 'admin123') {
+        alert("লগইন সফল হয়েছে!");
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('admin-section').style.display = 'block';
+    } else {
+        alert("ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।");
+    }
+}
+
+// ২. প্রোডাক্ট অ্যাড করার ফাংশন
 async function addProduct() {
     const name = document.getElementById('name').value;
     const price = document.getElementById('price').value;
@@ -24,7 +39,7 @@ async function addProduct() {
             alert("প্রোডাক্ট সফলভাবে Turjo Site-এ অ্যাড হয়েছে!");
             location.reload(); 
         } else {
-            alert("সার্ভার থেকে এরর এসেছে। আপনার Railway লগ চেক করুন।");
+            alert("সার্ভার থেকে এরর এসেছে। রেলওয়ে লগ চেক করুন।");
         }
     } catch (error) {
         console.error("Error:", error);
