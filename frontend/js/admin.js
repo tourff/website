@@ -9,7 +9,7 @@ function showTab(tabId) {
     document.getElementById('btn-' + tabId).classList.add('active');
 }
 
-// ২. স্ট্যাটাস মেসেজ দেখানোর ফাংশন (Alert-এর বদলে অন-স্ক্রিন মেসেজ)
+// ২. স্ট্যাটাস মেসেজ দেখানোর ফাংশন
 function showMsg(msgId, text, isError = false) {
     const el = document.getElementById(msgId);
     el.innerText = text;
@@ -39,14 +39,21 @@ function login() {
 async function addProduct() {
     const name = document.getElementById('name').value;
     const price = document.getElementById('price').value;
-    const oldPrice = document.getElementById('oldPrice').value; // ডিসকাউন্ট ফিল্ড
+    const oldPrice = document.getElementById('oldPrice').value;
     const image = document.getElementById('imgUrl').value;
+    const description = document.getElementById('description').value;
+    const soldCount = document.getElementById('soldCount').value;
+    const ratings = document.getElementById('ratings').value;
+    const stockQuantity = document.getElementById('stockQuantity').value;
+    const category = document.getElementById('category').value;
 
-    if(!name || !price || !image) return showMsg('action-msg', 'Fill all fields!', true);
+    if(!name || !price || !image) return showMsg('action-msg', 'Name, Price and Image are required!', true);
 
-    const productData = { name, price, oldPrice, image };
+    const productData = { 
+        name, price, oldPrice, image, description, 
+        soldCount, ratings, stockQuantity, category 
+    };
     
-    // যদি editingProductId থাকে তবে Update হবে (PUT), না থাকলে Add হবে (POST)
     const url = editingProductId ? `${BASE_URL}/admin/edit-product/${editingProductId}` : `${BASE_URL}/admin/add-product`;
     const method = editingProductId ? 'PUT' : 'POST';
 
@@ -58,25 +65,29 @@ async function addProduct() {
         });
         
         showMsg('action-msg', editingProductId ? 'Product Updated!' : 'Product Published!');
-        resetProductForm(); // ফর্ম রিসেট করা
-        loadAdminProducts(); // লিস্ট রিফ্রেশ করা
+        resetProductForm(); 
+        loadAdminProducts(); 
     } catch (err) {
         showMsg('action-msg', 'Error processing request', true);
     }
 }
 
 // এডিট মোড শুরু করার ফাংশন
-function startEdit(id, name, price, oldPrice, image) {
+function startEdit(id, name, price, oldPrice, image, description, soldCount, ratings, stockQty, cat) {
     editingProductId = id;
     document.getElementById('name').value = name;
     document.getElementById('price').value = price;
     document.getElementById('oldPrice').value = oldPrice || '';
     document.getElementById('imgUrl').value = image;
+    document.getElementById('description').value = description || '';
+    document.getElementById('soldCount').value = soldCount || '';
+    document.getElementById('ratings').value = ratings || '';
+    document.getElementById('stockQuantity').value = stockQty || '';
+    document.getElementById('category').value = cat || '';
     
-    // বাটনের টেক্সট পরিবর্তন করা
     document.getElementById('publish-btn').innerText = 'Update Product';
     showMsg('action-msg', 'Editing: ' + name);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // স্ক্রিন উপরে নিয়ে যাওয়া
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ফর্ম রিসেট ফাংশন
@@ -86,6 +97,11 @@ function resetProductForm() {
     document.getElementById('price').value = '';
     document.getElementById('oldPrice').value = '';
     document.getElementById('imgUrl').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('soldCount').value = '';
+    document.getElementById('ratings').value = '';
+    document.getElementById('stockQuantity').value = '';
+    document.getElementById('category').value = '';
     document.getElementById('publish-btn').innerText = 'Publish Product';
 }
 
@@ -103,7 +119,7 @@ async function loadAdminProducts() {
                 </div>
             </div>
             <div class="flex gap-1">
-                <button onclick="startEdit('${p._id}', '${p.name}', ${p.price}, ${p.oldPrice || 0}, '${p.image}')" class="text-yellow-500 hover:bg-yellow-500/10 p-2 rounded-lg transition"><i class="fas fa-edit text-[10px]"></i></button>
+                <button onclick="startEdit('${p._id}', '${p.name}', ${p.price}, ${p.oldPrice || 0}, '${p.image}', '${p.description || ''}', ${p.soldCount || 0}, ${p.ratings || 5.0}, ${p.stockQuantity || 0}, '${p.category || ''}')" class="text-yellow-500 hover:bg-yellow-500/10 p-2 rounded-lg transition"><i class="fas fa-edit text-[10px]"></i></button>
                 <button onclick="toggleStock('${p._id}')" class="text-blue-500 hover:bg-blue-500/10 p-2 rounded-lg transition"><i class="fas fa-sync-alt text-[10px]"></i></button>
                 <button onclick="deleteProduct('${p._id}')" class="text-rose-500 hover:bg-rose-500/10 p-2 rounded-lg transition"><i class="fas fa-trash-alt text-[10px]"></i></button>
             </div>
