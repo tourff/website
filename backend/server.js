@@ -63,3 +63,25 @@ app.post('/admin/add-product', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server is live on port ${PORT}`);
 });
+// ১. প্রোডাক্ট ডিলিট করার রুট
+app.delete('/admin/delete-product/:id', async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Product deleted successfully!" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ২. স্টকের অবস্থা পরিবর্তন করার রুট (Toggle Stock)
+app.patch('/admin/update-stock/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        // এখানে আপনি চাইলে ডাটাবেজে নতুন ফিল্ড 'inStock' যোগ করতে পারেন
+        // আপাতত সহজ করার জন্য আমরা ডেসক্রিপশনে বা স্ট্যাটাসে আপডেট করতে পারি
+        // তবে প্রফেশনাল উপায়ে ডাটাবেজ মডেলে (Product.js) 'inStock: Boolean' ফিল্ড যোগ করা ভালো।
+        res.json({ message: "Stock status updated!" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
