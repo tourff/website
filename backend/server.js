@@ -1,76 +1,74 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-const PORT = process.env.PORT || 8080;
-const JWT_SECRET = "turjo_super_secret_123";
+// ১. ডাটাবেজ কানেকশন
+mongoose.connect(process.env.MONGODB_URI || 'your_mongodb_url_here')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.error("❌ MongoDB Error:", err));
-
-// Schemas
+// ২. প্রোডাক্ট মডেল (ইন-স্টক ফিচারসহ)
 const productSchema = new mongoose.Schema({
-    name: String, price: Number, oldPrice: Number, 
-    image: String, description: String, customDiscount: String
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    oldPrice: { type: Number },
+    image: { type: String, required: true },
+    description: { type: String },
+    customDiscount: { type: String },
+    inStock: { type: Boolean, default: true } // স্টক ম্যানেজমেন্টের জন্য
 });
+
 const Product = mongoose.model('Product', productSchema);
 
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
-});
-const User = mongoose.model('User', userSchema);
-
-// --- Product Routes ---
+// ৩. পাবলিক রুট: সব প্রোডাক্ট পাওয়া
 app.get('/products', async (req, res) => {
-    const products = await Product.find();
-    res.json(products);
+    try {
+        const products = await Product.find();
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching products" });
+    }
 });
 
+// ৪. অ্যাডমিন রুট: নতুন প্রোডাক্ট অ্যাড করা
 app.post('/admin/add-product', async (req, res) => {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json(product);
+    try {
+        const newProduct = new Product(req.body);
+        await newProduct.save();
+        res.status(201).json({ message: "Product added successfully!" });
+    } catch (err) {
+        res.status(400).json({ message: "Error adding product" });
+    }
 });
 
+// ৫. অ্যাডমিন রুট: স্টক স্ট্যাটাস পরিবর্তন করা (Toggle Stock)
+app.patch('/admin/toggle-stock/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        product.inStock = !product.inStock; // ট্রু থাকলে ফলস হবে, ফলস থাকলে ট্রু
+        await product.save();
+        res.json({ message: "Stock status updated!", inStock: product.inStock });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// ৬. অ্যাডমিন রুট: প্রোডাক্ট ডিলিট করা
 app.delete('/admin/delete-product/:id', async (req, res) => {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: "Deleted" });
-});
-
-// --- Auth Routes ---
-app.post('/register', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, email, password: hashedPassword });
-        await newUser.save();
-        res.status(201).json({ message: "Registration Successful!" });
-    } catch (err) { res.status(400).json({ message: "Email already registered!" }); }
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Product deleted!" });
+    } catch (err) {
+        res.status(500).json({ message: "Delete failed" });
+    }
 });
 
-app.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ message: "User not found!" });
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ message: "Wrong Password!" });
-
-        const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token, username: user.username });
-    } catch (err) { res.status(500).json({ message: "Server error!" }); }
-});
-
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
