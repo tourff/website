@@ -1,60 +1,58 @@
-const API_URL = 'https://website-production-f869.up.railway.app/products';
-const WHATSAPP_NUMBER = '8801XXXXXXXXX'; // আপনার হোয়াটসঅ্যাপ নাম্বার দিন
-let allProducts = [];
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turjo Site | Premium Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class' }
+        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
+        .dark body { background-color: #030712; color: #f3f4f6; }
+        .light body { background-color: #f9fafb; color: #111827; }
+        .btn-primary { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
+    </style>
+</head>
+<body>
+    <nav class="sticky top-0 z-50 backdrop-blur-md dark:bg-[#030712]/80 dark:border-b dark:border-white/5 light:bg-white/80 light:border-b light:border-gray-200">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 btn-primary rounded-xl flex items-center justify-center"><i class="fas fa-bolt text-white"></i></div>
+                <span class="text-xl font-extrabold tracking-tighter dark:text-white light:text-gray-900 uppercase">TURJO SITE</span>
+            </div>
+            <div id="nav-auth" class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="bg-gray-500/10 p-2.5 rounded-full"><i id="theme-icon" class="fas fa-moon text-rose-500"></i></button>
+            </div>
+        </div>
+    </nav>
 
-async function fetchProducts() {
-    try {
-        const res = await fetch(API_URL);
-        allProducts = await res.json();
-        displayProducts(allProducts);
-    } catch (err) {
-        console.error("Fetch Error:", err);
-    }
-}
+    <div class="container mx-auto px-6 pt-10">
+        <div class="max-w-2xl mx-auto relative">
+            <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search services..." class="w-full py-4 px-12 rounded-2xl border outline-none dark:bg-white/5 dark:border-white/10 dark:text-white light:bg-white light:border-gray-200 light:text-gray-900 shadow-xl">
+            <i class="fas fa-search absolute left-5 top-5 text-gray-500"></i>
+        </div>
+    </div>
 
-function displayProducts(products) {
-    const container = document.getElementById('products-container');
-    container.innerHTML = ''; 
+    <main class="container mx-auto px-6 py-12">
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+    </main>
 
-    if (products.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-20 opacity-40 text-xl">No products matched your search!</div>';
-        return;
-    }
-
-    products.forEach(p => {
-        const discount = p.customDiscount || (p.oldPrice ? `-${Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%` : null);
-        const waMessage = encodeURIComponent(`Hello Turjo Site,\nI want to buy: ${p.name}\nPrice: ৳${p.price}`);
-        const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`;
-
-        container.innerHTML += `
-            <div class="glass-card rounded-[2rem] p-6 flex flex-col group relative overflow-hidden dark:bg-white/5 dark:border-white/5 light:bg-white light:shadow-xl light:border-gray-100 border">
-                ${discount ? `<div class="absolute top-5 left-5 z-10 btn-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg shadow-rose-500/20">${discount}</div>` : ''}
-                
-                <div class="w-full aspect-square bg-gray-500/5 rounded-[1.5rem] flex items-center justify-center mb-6 overflow-hidden relative">
-                    <img src="${p.image}" class="w-2/3 h-2/3 object-contain group-hover:scale-125 transition duration-700 pointer-events-none" alt="${p.name}">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                </div>
-
-                <h3 class="font-bold text-lg mb-2 truncate dark:text-white light:text-gray-900">${p.name}</h3>
-                <p class="text-xs mb-6 dark:text-gray-500 light:text-gray-600 line-clamp-2 leading-relaxed min-h-[2.5rem]">${p.description || 'Premium hand-picked digital service'}</p>
-                
-                <div class="flex items-center justify-between mt-auto">
-                    <div>
-                        <span class="text-2xl font-extrabold dark:text-white light:text-rose-600">৳${p.price}</span>
-                        ${p.oldPrice ? `<span class="block text-xs dark:text-gray-600 light:text-gray-400 line-through italic font-medium">৳${p.oldPrice}</span>` : ''}
-                    </div>
-                    <a href="${waLink}" target="_blank" class="w-12 h-12 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg shadow-rose-500/5">
-                        <i class="fab fa-whatsapp text-xl"></i>
-                    </a>
-                </div>
-            </div>`;
-    });
-}
-
-function searchProducts() {
-    const term = document.getElementById('search-input').value.toLowerCase();
-    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term) || (p.description && p.description.toLowerCase().includes(term)));
-    displayProducts(filtered);
-}
-
-fetchProducts();
+    <script src="js/main.js"></script>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark'); icon.classList.replace('fa-moon', 'fa-sun'); localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark'); icon.classList.replace('fa-sun', 'fa-moon'); localStorage.setItem('theme', 'dark');
+            }
+        }
+    </script>
+</body>
+</html>
