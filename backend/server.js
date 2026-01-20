@@ -53,17 +53,31 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- রুটসমূহ ---
 
-// ১. এডমিন প্যানেলের জন্য অর্ডার লিস্ট ফেচ করা (ভিডিওর মতো)
+// ১. এডমিন প্যানেলের জন্য সব অর্ডার ফেচ করা (Sorting যুক্ত করা হয়েছে)
 app.get('/orders', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ orderedAt: -1 }); // নতুন অর্ডার সবার উপরে দেখাবে
+        const orders = await Order.find().sort({ orderedAt: -1 }); // নতুন অর্ডার সবার উপরে
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "Orders fetch failed!" });
     }
 });
 
-// ২. অর্ডার স্ট্যাটাস আপডেট করার রুট (যেমন: Pending থেকে Success করা)
+// ২. ড্যাশবোর্ড অ্যানালিটিক্স ডাটা (এডমিন ভিডিওর মতো চার্ট দেখানোর জন্য)
+app.get('/admin/analytics', async (req, res) => {
+    try {
+        const totalProducts = await Product.countDocuments();
+        const totalUsers = await User.countDocuments();
+        const orders = await Order.find();
+        const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        
+        res.json({ totalProducts, totalUsers, totalRevenue, totalOrders: orders.length });
+    } catch (err) {
+        res.status(500).json({ message: "Analytics fetch failed!" });
+    }
+});
+
+// ৩. অর্ডার স্ট্যাটাস আপডেট করার রুট (যেমন: Pending থেকে Success করা)
 app.patch('/admin/update-order/:id', async (req, res) => {
     try {
         const { status } = req.body;
@@ -74,7 +88,7 @@ app.patch('/admin/update-order/:id', async (req, res) => {
     }
 });
 
-// ৩. অর্ডার ডিলিট করার রুট
+// ৪. অর্ডার ডিলিট করার রুট
 app.delete('/admin/delete-order/:id', async (req, res) => {
     try {
         await Order.findByIdAndDelete(req.params.id);
@@ -84,7 +98,7 @@ app.delete('/admin/delete-order/:id', async (req, res) => {
     }
 });
 
-// ৪. ইউজারের সংখ্যা দেখার রুট
+// ৫. কাস্টমার সংখ্যা দেখার রুট
 app.get('/users/count', async (req, res) => {
     try {
         const count = await User.countDocuments();
