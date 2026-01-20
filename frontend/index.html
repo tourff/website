@@ -15,7 +15,6 @@
         .badge-rose { background: #f43f5e; color: white; border-radius: 4px; }
         .cart-btn { background: linear-gradient(90deg, #9333ea, #db2777); }
         .slider-img { min-width: 100%; object-fit: cover; height: 100%; }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #f43f5e; border-radius: 10px; }
     </style>
@@ -37,7 +36,7 @@
             <div class="flex-1 max-w-xl relative hidden md:block group">
                 <input type="text" id="search-input" onkeyup="searchProducts()" placeholder="Search for ChatGPT, Canva, Netflix..." 
                     class="w-full search-box py-2.5 px-10 rounded-lg outline-none text-sm focus:border-rose-500 transition text-white">
-                <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-500 text-xs group-focus-within:text-rose-500"></i>
+                <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-500 text-xs"></i>
             </div>
 
             <div class="flex items-center gap-4 text-xs font-semibold">
@@ -45,12 +44,12 @@
                     <i class="fas fa-headset"></i> Support
                 </a>
                 
-                <button class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20 text-white">
+                <button id="main-cart-btn" class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20 text-white">
                     <i class="fas fa-shopping-cart"></i> ৳0
                 </button>
 
                 <div id="auth-nav" class="border-l border-white/10 pl-4">
-                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500">
+                    <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition">
                         <i class="far fa-user text-lg"></i> Login
                     </a>
                 </div>
@@ -96,10 +95,10 @@
     </main>
 
     <div class="fixed bottom-8 right-8 flex flex-col gap-4 z-50">
-        <a href="https://t.me/your_telegram" target="_blank" class="w-14 h-14 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-110 transition shadow-sky-500/20">
+        <a href="https://t.me/your_telegram" target="_blank" class="w-14 h-14 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-110 transition">
             <i class="fab fa-telegram-plane text-2xl"></i>
         </a>
-        <a href="https://wa.me/8801XXXXXXXXX" target="_blank" class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-110 transition shadow-green-500/20">
+        <a href="https://wa.me/8801XXXXXXXXX" target="_blank" class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-110 transition">
             <i class="fab fa-whatsapp text-3xl"></i>
         </a>
     </div>
