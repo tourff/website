@@ -1,22 +1,19 @@
-// আপনার রেলওয়ে পাবলিক ইউআরএল
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 
-// ১. লগইন ফাংশন (এটি না থাকলে এরর আসবে)
 function login() {
     const passwordField = document.getElementById('password').value;
     
-    // আপনার আগের সেট করা পাসওয়ার্ড
     if (passwordField === 'admin123') {
         alert("লগইন সফল হয়েছে!");
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('admin-section').style.display = 'block';
+        // HTML এর ID গুলোর সাথে মিল রাখা হয়েছে
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('panel').style.display = 'block';
     } else {
         alert("ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।");
     }
 }
 
-// ২. প্রোডাক্ট অ্যাড করার ফাংশন
-async function addProduct() {
+async function add() {
     const name = document.getElementById('name').value;
     const price = document.getElementById('price').value;
     const image = document.getElementById('imgUrl').value;
