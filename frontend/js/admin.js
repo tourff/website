@@ -9,12 +9,10 @@ window.onload = () => {
     initSidebarToggle();
     initNavigation();
     
-    // বর্তমান তারিখ প্রদর্শন
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // সিকিউরিটি চেক
     const auth = sessionStorage.getItem('adminAuth'); 
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
@@ -23,7 +21,6 @@ window.onload = () => {
     }
 };
 
-// ১. নেভিগেশন লজিক আপডেট (Slider এবং Orders যোগ করা হয়েছে)
 function initNavigation() {
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.onclick = () => {
@@ -31,24 +28,15 @@ function initNavigation() {
             if(!span) return;
             const text = span.innerText.toLowerCase();
             
-            // অ্যাক্টিভ ক্লাস ম্যানেজমেন্ট
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
-            // পেজ নেভিগেশন লজিক
-            if (text.includes('dashboard')) {
-                loadPage('dashboard');
-            } else if (text.includes('products')) {
-                window.location.href = 'admin-products.html'; 
-            } else if (text.includes('orders')) {
-                window.location.href = 'admin-orders.html'; // Orders পেজে যাবে
-            } else if (text.includes('slider')) {
-                window.location.href = 'admin-slider.html'; // Slider পেজে যাবে
-            } else if (text.includes('analytics')) {
-                loadPage('analytics');
-            } else if (text.includes('intelligence')) {
-                loadPage('intelligence');
-            }
+            if (text.includes('dashboard')) loadPage('dashboard');
+            else if (text.includes('products')) window.location.href = 'admin-products.html'; 
+            else if (text.includes('orders')) window.location.href = 'admin-orders.html'; 
+            else if (text.includes('slider')) loadPage('slider'); // স্লাইডার লোড হবে
+            else if (text.includes('analytics')) loadPage('analytics');
+            else if (text.includes('intelligence')) loadPage('intelligence');
         };
     });
 }
@@ -59,8 +47,36 @@ async function loadPage(page) {
 
     if (page === 'dashboard') {
         refreshData(); 
+    } else if (page === 'slider') {
+        // স্লাইডার ম্যানেজমেন্ট ইন্টারফেস
+        mainContent.innerHTML = `
+            <div class="space-y-8 animate-in fade-in duration-500 text-left">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-800 dark:text-white">Slider Management</h2>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Update website hero banners</p>
+                </div>
+                
+                <section class="glass-card p-8">
+                    <div class="flex flex-col md:flex-row gap-6 items-end">
+                        <div class="flex-1 space-y-2">
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Banner Image URL</label>
+                            <input type="text" id="slider-url" placeholder="https://example.com/banner.jpg" class="w-full bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl outline-none border border-transparent focus:border-blue-500 transition text-sm dark:text-white">
+                        </div>
+                        <button onclick="addSlider()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-plus mr-2"></i> Add Banner
+                        </button>
+                    </div>
+                </section>
+
+                <div id="slider-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
+                    <div class="col-span-full py-20 text-center opacity-20">
+                        <i class="fas fa-images text-6xl mb-4 text-slate-400"></i>
+                        <p class="font-bold uppercase tracking-widest text-xs">Fetching Banners...</p>
+                    </div>
+                </div>
+            </div>`;
+        fetchSliders();
     } else {
-        // অন্যান্য পেজের জন্য লোডিং স্টেট
         mainContent.innerHTML = `
             <div class="glass-card p-10 text-center animate-pulse">
                 <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
@@ -70,24 +86,80 @@ async function loadPage(page) {
     }
 }
 
+// --- স্লাইডার ফাংশনসমূহ ---
+
+async function fetchSliders() {
+    const container = document.getElementById('slider-list');
+    try {
+        const res = await fetch(`${BASE_URL}/sliders`);
+        const sliders = await res.json();
+        
+        if (sliders.length === 0) {
+            container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400 font-bold uppercase text-[10px]">No active banners</div>`;
+            return;
+        }
+
+        container.innerHTML = sliders.map(s => `
+            <div class="glass-card overflow-hidden group relative transition-all hover:shadow-xl">
+                <img src="${s.imageUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500">
+                <div class="p-4 flex justify-between items-center bg-white dark:bg-[#161021]">
+                    <span class="text-[9px] font-black text-slate-400 uppercase">ID: ${s._id.slice(-6)}</span>
+                    <button onclick="deleteSlider('${s._id}')" class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = `<p class="col-span-full text-center text-rose-500">Failed to load data</p>`;
+    }
+}
+
+async function addSlider() {
+    const urlInput = document.getElementById('slider-url');
+    if (!urlInput.value) return alert("Please enter image URL");
+
+    try {
+        const res = await fetch(`${BASE_URL}/admin/add-slider`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: urlInput.value })
+        });
+        if (res.ok) {
+            urlInput.value = '';
+            fetchSliders();
+        }
+    } catch (err) {
+        alert("Action failed!");
+    }
+}
+
+async function deleteSlider(id) {
+    if (!confirm("Delete this banner?")) return;
+    try {
+        const res = await fetch(`${BASE_URL}/admin/delete-slider/${id}`, { method: 'DELETE' });
+        if (res.ok) fetchSliders();
+    } catch (err) {
+        alert("Delete failed!");
+    }
+}
+
+// --- ড্যাশবোর্ড ও অন্যান্য ফাংশন (অপরিবর্তিত) ---
+
 async function refreshData() {
     try {
         const [pRes, oRes] = await Promise.all([
             fetch(`${BASE_URL}/products`).catch(() => null),
             fetch(`${BASE_URL}/orders`).catch(() => null)
         ]);
-        
         if (!pRes || !oRes) throw new Error("Server Unreachable");
-
         const products = await pRes.json();
         const orders = await oRes.json();
-        
         updateStats(orders);
         updateInsights(orders, products);
         renderCharts(orders); 
         updateOperations(orders); 
         renderTopProducts(orders, products);
-        
     } catch (err) {
         console.error("Dashboard Sync Failed:", err);
         const incomeEl = document.getElementById('today-income');
@@ -100,7 +172,6 @@ function updateStats(orders) {
     startOfToday.setHours(0,0,0,0);
     const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
     const todayRev = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
-    
     const incomeEl = document.getElementById('today-income');
     const orderCountEl = document.getElementById('month-orders');
     if (incomeEl) incomeEl.innerText = `৳${todayRev.toLocaleString()}`;
@@ -113,17 +184,14 @@ function updateInsights(orders, products) {
     const recentOrders = orders.filter(o => new Date(o.orderedAt) >= thirtyDaysAgo);
     const totalRev = recentOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     const avgValue = recentOrders.length > 0 ? (totalRev / recentOrders.length) : 0;
-
     const outOfStock = products.filter(p => p.stockQuantity <= 0).length;
     const lowStock = products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 5).length;
     const totalAlerts = outOfStock + lowStock;
-
     const cards = document.querySelectorAll('.glass-card h4.text-2xl');
     if (cards.length >= 4) {
         cards[0].innerText = recentOrders.length;
         cards[1].innerText = `৳${totalRev.toLocaleString()}`;
         cards[2].innerText = `৳${Math.round(avgValue).toLocaleString()}`;
-        
         cards[3].innerText = totalAlerts;
         cards[3].className = totalAlerts > 0 ? "text-2xl font-black text-rose-500" : "text-2xl font-black text-emerald-500";
     }
