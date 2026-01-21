@@ -3,14 +3,15 @@ const ADMIN_PASS = "turjo0424";
 let revenueChartInstance = null;
 
 window.onload = () => {
-    // ১. ডেট সেট করা
+    // তারিখ সেট করার লজিক
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // ২. সিকিউরিটি চেক: sessionStorage ব্যবহার করা হয়েছে যাতে ব্রাউজার বন্ধ করলে লগআউট হয়
+    // ১. সিকিউরিটি চেক: sessionStorage ব্যবহার করা হয়েছে
     const auth = sessionStorage.getItem('adminAuth'); 
     if (auth !== ADMIN_PASS) {
+        // লগইন করা না থাকলে লগইন পেজে পাঠিয়ে দিবে
         window.location.href = 'admin-login.html'; 
     } else {
         initDashboard();
@@ -19,21 +20,22 @@ window.onload = () => {
     }
 };
 
-// ৩. নেভিগেশন ঠিক করা
+// ২. নেভিগেশন লজিক (আলাদা পেজে যাওয়ার জন্য)
 function initNavigation() {
+    // Products কার্ডে ক্লিক করলে admin-products.html এ যাবে
     const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
     if (prodCard) prodCard.onclick = () => window.location.href = 'admin-products.html';
 
+    // Orders কার্ডে ক্লিক করলে admin-orders.html এ যাবে
     const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
     if (orderCard) orderCard.onclick = () => window.location.href = 'admin-orders.html';
 }
 
-// ৪. থিম টগল (ডার্ক/লাইট মোড)
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
     
-    // আগের সেভ করা থিম লোড (এটি localStorage এ থাকবে কারণ এটি সিকিউরিটি ইস্যু না)
+    // আগের থিম লোড করা
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
         if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -49,7 +51,6 @@ function initTheme() {
                 if(isDark) themeIcon.classList.replace('fa-moon', 'fa-sun');
                 else themeIcon.classList.replace('fa-sun', 'fa-moon');
             }
-            // থিম বদলালে গ্রাফের কালার আপডেট করতে রি-রেন্ডার
             refreshData(); 
         });
     }
@@ -141,9 +142,10 @@ function renderChart(orders) {
     });
 }
 
+// লগআউট ফাংশন আপডেট করা হয়েছে
 function handleAdminLogout() {
     if(confirm("Are you sure?")) {
-        sessionStorage.removeItem('adminAuth'); //
+        sessionStorage.removeItem('adminAuth'); // সেশন থেকে তথ্য মুছে দিবে
         window.location.href = 'admin-login.html'; 
     }
 }
