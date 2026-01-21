@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management | Prime Products BD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
+        .dark body { background-color: #0d0915; color: white; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: 0.3s; }
+        .dark .glass-card { background: rgba(22, 16, 33, 0.7); border-color: rgba(255, 255, 255, 0.05); }
+        .status-badge { font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+    </style>
+</head>
+<body class="p-8 lg:p-12">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10 text-left">
+            <div>
+                <a href="admin.html" class="text-blue-600 font-bold text-xs uppercase tracking-widest hover:underline"><i class="fas fa-arrow-left mr-2"></i> Dashboard</a>
+                <h1 class="text-3xl font-black mt-2">Order Management</h1>
+            </div>
+            <button onclick="fetchOrders()" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl hover:scale-110 transition">
+                <i class="fas fa-sync-alt text-blue-600"></i>
+            </button>
+        </header>
+
+        <section class="glass-card p-8">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b dark:border-slate-800">
+                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Customer</th>
+                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Amount</th>
+                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Status</th>
+                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="order-list-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/admin-orders.js"></script>
+    <script>if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
+</body>
+</html>
