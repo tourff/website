@@ -12,7 +12,7 @@ window.onload = () => {
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
     } else {
-        // রিফ্রেশ প্রোটেকশন: ড্যাশবোর্ড লোড হওয়ার সাথে সাথে সেশন ক্লিয়ার করা
+        // রিফ্রেশ প্রোটেকশন: ড্যাশবোর্ড লোড হওয়ার সাথে সাথে সেশন ক্লিয়ার করা
         sessionStorage.removeItem('adminAuth'); 
 
         initDashboard();
@@ -21,26 +21,44 @@ window.onload = () => {
     }
 };
 
-// ২. নেভিগেশন লজিক: স্লাইডার পেজ যুক্ত করা হয়েছে
+// ২. নেভিগেশন লজিক (সবগুলো এখানে যুক্ত করা হয়েছে)
 function initNavigation() {
+    // ক) Products পেজ নেভিগেশন
     const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
-    if (prodCard) prodCard.onclick = () => window.location.href = 'admin-products.html';
+    if (prodCard) prodCard.onclick = () => {
+        sessionStorage.setItem('adminAuth', ADMIN_PASS);
+        window.location.href = 'admin-products.html';
+    };
 
+    // খ) Orders পেজ নেভিগেশন
     const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
-    if (orderCard) orderCard.onclick = () => window.location.href = 'admin-orders.html';
+    if (orderCard) orderCard.onclick = () => {
+        sessionStorage.setItem('adminAuth', ADMIN_PASS);
+        window.location.href = 'admin-orders.html';
+    };
 
-    // Chats আইকনকে Slider ম্যানেজমেন্ট পেজে রূপান্তর
-    const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement;
+    // গ) Slider ম্যানেজমেন্ট পেজ নেভিগেশন
+    const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement || 
+                       document.querySelector('.action-card i.fa-images')?.parentElement;
     if (sliderCard) {
-        // আইকন এবং টেক্সট পরিবর্তন করে স্লাইডার পেজের সাথে কানেক্ট করা
         sliderCard.innerHTML = `
             <i class="fas fa-images text-purple-500 text-xl"></i>
             <span class="text-[10px] font-bold uppercase">Slider</span>
         `;
         sliderCard.onclick = () => {
-            // স্লাইডার পেজে যাওয়ার আগে সেশন আবার সেট করা হচ্ছে যাতে ওই পেজ আপনাকে রিজেক্ট না করে
             sessionStorage.setItem('adminAuth', ADMIN_PASS);
             window.location.href = 'admin-slider.html';
+        };
+    }
+
+    // ঘ) User Intelligence পেজ নেভিগেশন (নতুন যোগ করা হয়েছে)
+    const intelligenceCard = document.querySelector('.action-card i.fa-brain')?.parentElement || 
+                             document.querySelector('.action-card i.fa-chart-line')?.parentElement;
+    if (intelligenceCard) {
+        intelligenceCard.onclick = () => {
+            // সিকিউরিটি বজায় রাখতে সেশন আবার সেট করা
+            sessionStorage.setItem('adminAuth', ADMIN_PASS); 
+            window.location.href = 'admin-intelligence.html'; 
         };
     }
 }
