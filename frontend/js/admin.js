@@ -3,53 +3,45 @@ const ADMIN_PASS = "turjo0424";
 let revenueChartInstance = null;
 
 window.onload = () => {
-    // হেডার ডেট সেট করা
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // ১. সিকিউরিটি চেক
     const auth = localStorage.getItem('adminAuth');
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
     } else {
         initDashboard();
         initTheme(); 
-        initNavigation(); // নতুন পেজে যাওয়ার লজিক যুক্ত করা হয়েছে
+        initNavigation(); // Nav logic add kora hoyeche
     }
 };
 
-// ২. প্রোডাক্ট ম্যানেজমেন্ট পেজে যাওয়ার লজিক
+// Quick Action Cards er link set kora
 function initNavigation() {
-    // Quick Actions এর Products কার্ডে ক্লিক করলে আলাদা পেজে নিয়ে যাবে
+    // Product Card
     const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
-    if (prodCard) {
-        prodCard.onclick = () => {
-            window.location.href = 'admin-products.html'; // আলাদা প্রোডাক্ট পেজ
-        };
-    }
+    if (prodCard) prodCard.onclick = () => window.location.href = 'admin-products.html';
+
+    // Order Card
+    const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
+    if (orderCard) orderCard.onclick = () => window.location.href = 'admin-orders.html';
 }
 
-// ৩. থিম (ডার্ক/লাইট মোড) ইনিশিয়ালিজেশন
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
-    
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
         if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
     }
-
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
-            
-            if (document.documentElement.classList.contains('dark')) {
-                localStorage.setItem('theme', 'dark');
-                if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
-            } else {
-                localStorage.setItem('theme', 'light');
-                if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            if (themeIcon) {
+                if(document.documentElement.classList.contains('dark')) themeIcon.classList.replace('fa-moon', 'fa-sun');
+                else themeIcon.classList.replace('fa-sun', 'fa-moon');
             }
             refreshData(); 
         });
@@ -63,12 +55,35 @@ async function initDashboard() {
 
 async function refreshData() {
     try {
-        const response = await fetch(`${BASE_URL}/orders`);
-        const orders = await response.json();
+        // Products ebong Orders eksathe fetch kora
+        const [pRes, oRes] = await Promise.all([
+            fetch(`${BASE_URL}/products`),
+            fetch(`${BASE_URL}/orders`)
+        ]);
+        
+        const products = await pRes.json();
+        const orders = await oRes.json();
+        
         updateStats(orders);
         renderChart(orders);
+        checkStockStatus(products); // Stock Alert check kora
+        
     } catch (err) {
         console.error("Dashboard Sync Failed:", err);
+    }
+}
+
+// Stock Alert Logic
+function checkStockStatus(products) {
+    const outOfStockItems = products.filter(p => p.stockQuantity <= 0);
+    const alertBox = document.getElementById('stock-alert-container');
+    const alertMsg = document.getElementById('stock-alert-msg');
+
+    if (outOfStockItems.length > 0 && alertBox) {
+        alertBox.classList.remove('hidden');
+        alertMsg.innerText = `${outOfStockItems.length} items are currently out of stock! Please refill.`;
+    } else if (alertBox) {
+        alertBox.classList.add('hidden');
     }
 }
 
@@ -88,12 +103,10 @@ function updateStats(orders) {
 function renderChart(orders) {
     const chartCanvas = document.getElementById('revenueChart');
     if (!chartCanvas) return;
-
     const ctx = chartCanvas.getContext('2d');
     if (revenueChartInstance) revenueChartInstance.destroy();
     
     const last7Orders = orders.slice(-7); 
-    
     const isDark = document.documentElement.classList.contains('dark');
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
     const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -103,7 +116,7 @@ function renderChart(orders) {
         data: {
             labels: last7Orders.map(o => new Date(o.orderedAt).toLocaleDateString()),
             datasets: [{ 
-                label: 'Revenue Growth',
+                label: 'Revenue',
                 data: last7Orders.map(o => o.totalAmount), 
                 borderColor: isDark ? '#f43f5e' : '#2563eb',
                 backgroundColor: isDark ? 'rgba(244, 63, 94, 0.1)' : 'rgba(37, 99, 235, 0.1)',
@@ -116,22 +129,15 @@ function renderChart(orders) {
             maintainAspectRatio: false, 
             plugins: { legend: { display: false } },
             scales: {
-                y: { 
-                    beginAtZero: true, 
-                    grid: { color: gridColor },
-                    ticks: { color: textColor }
-                },
-                x: { 
-                    grid: { display: false },
-                    ticks: { color: textColor }
-                }
+                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                x: { grid: { display: false }, ticks: { color: textColor } }
             }
         }
     });
 }
 
 function handleAdminLogout() {
-    if(confirm("Are you sure you want to logout?")) {
+    if(confirm("Are you sure?")) {
         localStorage.removeItem('adminAuth'); 
         window.location.href = 'admin-login.html'; 
     }
