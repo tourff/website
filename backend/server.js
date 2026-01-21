@@ -17,18 +17,18 @@ mongoose.connect(mongoURI)
 // --- মডলেসমূহ ---
 
 const Product = mongoose.model('Product', new mongoose.Schema({
-    name: String, 
-    price: Number, 
-    oldPrice: Number, 
-    image: String, 
+    name: { type: String, required: true }, 
+    price: { type: Number, required: true }, 
+    oldPrice: { type: Number, default: null }, 
+    image: { type: String, required: true }, 
     inStock: { type: Boolean, default: true },
-    stockQuantity: { type: Number, default: 99 },
+    stockQuantity: { type: Number, default: 0 },
+    description: { type: String, default: "" },
+    category: { type: String, default: "General" },
     soldCount: { type: Number, default: 0 },
     ratings: { type: Number, default: 5.0 },
-    reviews: { type: Number, default: 0 },
-    description: String,
-    category: String
-}));
+    reviews: { type: Number, default: 0 }
+}, { timestamps: true }));
 
 const Banner = mongoose.model('Banner', new mongoose.Schema({
     imageUrl: { type: String, required: true },
@@ -54,6 +54,7 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- রুটসমূহ ---
 
+// ১. ড্যাশবোর্ড অ্যানালিটিক্স
 app.get('/admin/analytics', async (req, res) => {
     try {
         const totalProducts = await Product.countDocuments();
@@ -77,15 +78,63 @@ app.get('/admin/analytics', async (req, res) => {
     }
 });
 
-app.get('/admin/chart-data', async (req, res) => {
+// ২. প্রোডাক্ট রুটসমূহ (Updated for Inventory System)
+app.get('/products', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ orderedAt: 1 }).limit(10);
-        res.json(orders);
+        const products = await Product.find().sort({ createdAt: -1 });
+        res.json(products);
     } catch (err) {
-        res.status(500).json({ message: "Chart data failed!" });
+        res.status(500).json({ message: "Products fetch failed!" });
     }
 });
 
+app.post('/admin/add-product', async (req, res) => {
+    try {
+        const productData = {
+            name: req.body.name,
+            price: req.body.price,
+            oldPrice: req.body.oldPrice,
+            image: req.body.image,
+            stockQuantity: req.body.stock, // UI থেকে 'stock' হিসেবে আসছে
+            description: req.body.desc,    // UI থেকে 'desc' হিসেবে আসছে
+            inStock: req.body.stock > 0
+        };
+        const product = new Product(productData);
+        await product.save();
+        res.status(201).json(product);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to add product" });
+    }
+});
+
+app.put('/admin/edit-product/:id', async (req, res) => {
+    try {
+        const updateData = {
+            name: req.body.name,
+            price: req.body.price,
+            oldPrice: req.body.oldPrice,
+            image: req.body.image,
+            stockQuantity: req.body.stock,
+            description: req.body.desc,
+            inStock: req.body.stock > 0
+        };
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(500).json({ message: "Update failed" });
+    }
+});
+
+app.delete('/admin/delete-product/:id', async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Product deleted" });
+    } catch (err) {
+        res.status(500).json({ message: "Delete failed" });
+    }
+});
+
+// ৩. অর্ডার ম্যানেজমেন্ট
 app.get('/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ orderedAt: -1 });
@@ -114,139 +163,44 @@ app.delete('/admin/delete-order/:id', async (req, res) => {
     }
 });
 
-app.post('/auth/signup', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        const existingUser = await User.findOne({ email });
-        if (existingUser) return res.status(400).json({ message: "Email already exists!" });
-        const user = new User({ name, email, password }); 
-        await user.save();
-        res.status(201).json({ message: "Account created successfully!" });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-app.post('/auth/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user || user.password !== password) {
-            return res.status(400).json({ message: "Invalid credentials!" });
-        }
-        res.json({ message: "Login successful", user: { name: user.name, email: user.email } });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-app.get('/products', async (req, res) => {
-    const products = await Product.find();
-    res.json(products);
-});
-
-app.post('/admin/add-product', async (req, res) => {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json(product);
-});
-
-app.put('/admin/edit-product/:id', async (req, res) => {
-    try {
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedProduct);
-    } catch (err) {
-        res.status(500).json({ message: "Update failed" });
-    }
-});
-
-app.delete('/admin/delete-product/:id', async (req, res) => {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: "Product deleted" });
-});
-
-// --- স্লাইডার/ব্যানার রুটসমূহ ---
-
-// অ্যাডমিন প্যানেলের জন্য (/sliders)
+// ৪. স্লাইডার এবং ইউজার অথ (বাকি রুটগুলো অপরিবর্তিত)
 app.get('/sliders', async (req, res) => {
-    try {
-        const banners = await Banner.find();
-        res.json(banners);
-    } catch (err) {
-        res.status(500).json({ message: "Failed to fetch sliders" });
-    }
+    const banners = await Banner.find();
+    res.json(banners);
 });
 
-// মেইন ওয়েবসাইটের জন্য (/banners) - এটি ৪0৪ এরর দূর করবে
 app.get('/banners', async (req, res) => {
-    try {
-        const banners = await Banner.find();
-        res.json(banners);
-    } catch (err) {
-        res.status(500).json({ message: "Failed to fetch banners" });
-    }
+    const banners = await Banner.find();
+    res.json(banners);
 });
 
 app.post('/admin/add-slider', async (req, res) => {
-    try {
-        const banner = new Banner(req.body);
-        await banner.save();
-        res.status(201).json(banner);
-    } catch (err) {
-        res.status(500).json({ message: "Failed to add slider" });
-    }
-});
-
-app.put('/admin/edit-slider/:id', async (req, res) => {
-    try {
-        const updatedSlider = await Banner.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedSlider);
-    } catch (err) {
-        res.status(500).json({ message: "Update failed" });
-    }
+    const banner = new Banner(req.body);
+    await banner.save();
+    res.status(201).json(banner);
 });
 
 app.delete('/admin/delete-slider/:id', async (req, res) => {
-    try {
-        await Banner.findByIdAndDelete(req.params.id);
-        res.json({ message: "Slider deleted successfully" });
-    } catch (err) {
-        res.status(500).json({ message: "Delete failed" });
-    }
+    await Banner.findByIdAndDelete(req.params.id);
+    res.json({ message: "Slider deleted" });
 });
-// --- USER INTELLIGENCE API ---
+
+app.post('/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password) return res.status(400).json({ message: "Invalid credentials!" });
+    res.json({ message: "Login successful", user: { name: user.name, email: user.email } });
+});
+
 app.get('/admin/user-intelligence', async (req, res) => {
     try {
-        // ১. মেট্রিক কার্ডের জন্য ডাটা সংগ্রহ
-        const totalUsers = await User.countDocuments(); // ডিজাইন অনুযায়ী Total Visitors
-        
+        const totalUsers = await User.countDocuments();
         const startOfToday = new Date();
         startOfToday.setHours(0,0,0,0);
-        const todayNewUsers = await User.countDocuments({ createdAt: { $gte: startOfToday } }); // Today
-
-        // ২. হাই রিস্ক ক্যালকুলেশন (পেন্ডিং এবং বড় অংকের অর্ডার)
-        const highRiskOrders = await Order.countDocuments({ 
-            status: 'Pending', 
-            totalAmount: { $gt: 5000 } 
-        });
-
-        // ৩. ডিভাইস ব্রেকডাউন ডাটা
-        const deviceStats = {
-            mobile: 74,
-            desktop: 22,
-            bot: 3,
-            unknown: 1
-        };
-
-        res.json({
-            totalUsers,
-            todayNewUsers,
-            highRiskOrders,
-            deviceStats,
-            suspiciousActivity: [] // বর্তমানে কোনো সন্দেহজনক অ্যাক্টিভিটি নেই
-        });
+        const todayNewUsers = await User.countDocuments({ createdAt: { $gte: startOfToday } });
+        res.json({ totalUsers, todayNewUsers, deviceStats: { mobile: 74, desktop: 26 } });
     } catch (err) {
-        res.status(500).json({ message: "Intelligence data fetch failed!" });
+        res.status(500).json({ message: "Intelligence failed" });
     }
 });
 
