@@ -8,34 +8,37 @@ window.onload = () => {
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // ১. সিকিউরিটি চেক: sessionStorage ব্যবহার করা হয়েছে
+    // ১. সিকিউরিটি চেক: sessionStorage থেকে ডাটা চেক করা
     const auth = sessionStorage.getItem('adminAuth'); 
+    
     if (auth !== ADMIN_PASS) {
-        // লগইন করা না থাকলে লগইন পেজে পাঠিয়ে দিবে
+        // পাসওয়ার্ড না থাকলে লগইন পেজে পাঠিয়ে দিবে
         window.location.href = 'admin-login.html'; 
     } else {
+        // হাই-সিকিউরিটি আপডেট: ড্যাশবোর্ডে ঢোকার সাথে সাথে সেশন থেকে পাসওয়ার্ড মুছে ফেলা হচ্ছে
+        // ফলে রিফ্রেশ দিলেই ব্রাউজার আর পাসওয়ার্ড খুঁজে পাবে না এবং পুনরায় লগইন চাইবে
+        sessionStorage.removeItem('adminAuth'); 
+
         initDashboard();
         initTheme(); 
         initNavigation(); 
     }
 };
 
-// ২. নেভিগেশন লজিক (আলাদা পেজে যাওয়ার জন্য)
+// ২. নেভিগেশন লজিক
 function initNavigation() {
-    // Products কার্ডে ক্লিক করলে admin-products.html এ যাবে
     const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
     if (prodCard) prodCard.onclick = () => window.location.href = 'admin-products.html';
 
-    // Orders কার্ডে ক্লিক করলে admin-orders.html এ যাবে
     const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
     if (orderCard) orderCard.onclick = () => window.location.href = 'admin-orders.html';
 }
 
+// ৩. থিম লজিক
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
     
-    // আগের থিম লোড করা
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
         if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -142,10 +145,9 @@ function renderChart(orders) {
     });
 }
 
-// লগআউট ফাংশন আপডেট করা হয়েছে
 function handleAdminLogout() {
     if(confirm("Are you sure?")) {
-        sessionStorage.removeItem('adminAuth'); // সেশন থেকে তথ্য মুছে দিবে
+        sessionStorage.removeItem('adminAuth'); 
         window.location.href = 'admin-login.html'; 
     }
 }
