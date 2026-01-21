@@ -42,14 +42,16 @@ function initNavigation() {
     });
 }
 
-// ২. পেজ কন্টেন্ট লোডার (SPA)
+// ২. পেজ কন্টেন্ট লোডার (SPA) - এখানে সেফটি চেক যোগ করা হয়েছে
 async function loadPage(page) {
     const mainContent = document.getElementById('main-content');
     const title = document.getElementById('page-title');
     
-    // পেজ অনুযায়ী কন্টেন্ট পরিবর্তন
+    if (!mainContent) return; // এরর ফিক্স
+
+    // পেজ অনুযায়ী কন্টেন্ট পরিবর্তন
     if (page === 'dashboard') {
-        title.innerText = "Dashboard Overview";
+        if (title) title.innerText = "Dashboard Overview"; // সেফটি চেক
         mainContent.innerHTML = `
             <div class="animate-fade-in space-y-8 text-left">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -69,11 +71,11 @@ async function loadPage(page) {
                     </section>
                 </div>
             </div>`;
-        initDashboard(); // ড্যাশবোর্ড ডাটা ফেচ শুরু
+        initDashboard(); 
     } else if (page === 'products') {
-        title.innerText = "Product Inventory";
+        if (title) title.innerText = "Product Inventory"; // সেফটি চেক
         mainContent.innerHTML = `<div class="p-8 text-center text-slate-400 font-bold uppercase tracking-widest">Loading Products Interface...</div>`;
-        // এখানে আপনার প্রোডাক্ট পেজের ইন্টারফেস ফাংশন কল হবে
+        if (typeof fetchInventory === "function") fetchInventory(); 
     }
 }
 
@@ -102,7 +104,7 @@ async function refreshData() {
     }
 }
 
-// ৪. স্ট্যাটাস এবং চার্ট আপডেট (আপনার আগের লজিকগুলো অক্ষুণ্ণ আছে)
+// ৪. স্ট্যাটাস এবং চার্ট আপডেট
 function updateStats(orders) {
     const startOfToday = new Date();
     startOfToday.setHours(0,0,0,0);
@@ -124,7 +126,6 @@ function updateInsights(orders, products) {
     const avgValue = recentOrders.length > 0 ? (totalRev / recentOrders.length) : 0;
     const stockAlerts = products.filter(p => p.stockQuantity <= 5).length;
 
-    // যদি ড্যাশবোর্ড ভিউতে থাকে তবেই আপডেট হবে
     const cards = document.querySelectorAll('.glass-card h4.text-2xl');
     if (cards.length >= 4) {
         cards[0].innerText = recentOrders.length;
@@ -180,7 +181,8 @@ function renderStatusChart(orders) {
     const completed = orders.filter(o => o.status === 'completed').length;
     const rejected = orders.filter(o => o.status === 'rejected').length;
 
-    document.getElementById('total-orders-count').innerText = orders.length;
+    const countEl = document.getElementById('total-orders-count');
+    if (countEl) countEl.innerText = orders.length;
 
     statusChartInstance = new Chart(ctx, {
         type: 'doughnut',
@@ -223,7 +225,7 @@ function updateOperations(orders) {
     if (opMsg) opMsg.innerText = `Process ${pendingCount} pending orders`;
 }
 
-// ৫. সিস্টেম ফাংশনসমূহ (Theme & Sidebar)
+// ৫. সিস্টেম ফাংশনসমূহ
 function initSidebarToggle() {
     const sidebar = document.getElementById('main-sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
