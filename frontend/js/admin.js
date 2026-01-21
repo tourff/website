@@ -1,164 +1,575 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
+
 const ADMIN_PASS = "turjo0424";
 
-// চার্ট ইন্সট্যান্স রাখার জন্য ভেরিয়েবল
+
+
 let revenueChartInstance = null;
+
 let statusChartInstance = null; 
 
+
+
 window.onload = () => {
+
     initTheme();
+
     initSidebarToggle();
+
     initNavigation();
+
     
-    // তারিখ প্রদর্শন
+
+    // বর্তমান তারিখ প্রদর্শন
+
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+
     const dateEl = document.getElementById('current-date');
+
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // সিকিউরিটি চেক: সেশন স্টোরেজে সঠিক পাসওয়ার্ড আছে কি না
+
+
+    // ১. সিকিউরিটি চেক: সেশন স্টোরেজে সঠিক পাসওয়ার্ড আছে কি না
+
     const auth = sessionStorage.getItem('adminAuth'); 
+
+    
+
     if (auth !== ADMIN_PASS) {
+
+        // যদি লগইন করা না থাকে তবে লগইন পেজে পাঠিয়ে দেবে
+
         window.location.href = 'admin-login.html'; 
+
     } else {
-        // শুরুতে ড্যাশবোর্ড লোড করবে
+
+        // পাসওয়ার্ড সঠিক হলে সরাসরি ড্যাশবোর্ড ডাটা লোড করবে
+
         loadPage('dashboard');
+
     }
+
 };
 
-// ১. নেভিগেশন লজিক (SPA সিস্টেম)
+
+
+// ২. সাইডবার নেভিগেশন কন্ট্রোল
+
 function initNavigation() {
-    // সাইডবার মেনু ক্লিকের জন্য
+
     document.querySelectorAll('.sidebar-item').forEach(item => {
+
         item.onclick = () => {
+
             const span = item.querySelector('span');
+
             if(!span) return;
+
             const text = span.innerText.toLowerCase();
+
             
+
             // অ্যাক্টিভ ক্লাস ম্যানেজমেন্ট
+
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+
             item.classList.add('active');
 
-            // টেক্সট অনুযায়ী পেজ রাউটিং
+
+
+            // বিভিন্ন পেজ লোড করার লজিক
+
             if (text.includes('dashboard')) loadPage('dashboard');
+
             else if (text.includes('products')) loadPage('products');
+
             else if (text.includes('orders')) loadPage('orders');
-            else if (text.includes('slider')) loadPage('slider');
+
+            else if (text.includes('analytics')) loadPage('analytics');
+
             else if (text.includes('intelligence')) loadPage('intelligence');
+
         };
+
     });
+
 }
 
-// ২. মেইন পেজ কন্টেন্ট এবং স্ক্রিপ্ট লোডার
+
+
+// ৩. পেজ কন্টেন্ট লোডার (SPA logic)
+
 async function loadPage(page) {
+
     const mainContent = document.getElementById('main-content');
-    const pageTitle = document.getElementById('page-title');
+
     if (!mainContent) return;
 
-    // লোডিং এনিমেশন
-    mainContent.innerHTML = `<div class="p-20 text-center"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>`;
 
-    try {
-        if (page === 'dashboard') {
-            // ড্যাশবোর্ডের মূল স্ট্রাকচার (আপনার ডিজাইন অনুযায়ী)
-            mainContent.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                    <div class="glass-card p-8 border-l-4 border-blue-500">
-                        <p class="text-[10px] font-black text-slate-400 uppercase">Today Revenue</p>
-                        <h4 id="today-income" class="text-4xl font-black mt-2">৳0</h4>
-                    </div>
-                    <div class="glass-card p-8 border-l-4 border-green-500">
-                        <p class="text-[10px] font-black text-slate-400 uppercase">Today Orders</p>
-                        <h4 id="month-orders" class="text-4xl font-black mt-2">0 Orders</h4>
-                    </div>
-                </div>
-                <div class="glass-card p-6 h-[320px] mt-8"><canvas id="revenueChart"></canvas></div>`;
-            pageTitle.innerText = "Dashboard";
-            refreshDashboardData(); // ড্যাশবোর্ড ডাটা ফেচ করবে
-        } else {
-            // অন্য সব পেজের জন্য HTML ফেচ করা
-            const response = await fetch(`admin-${page}.html`);
-            const htmlText = await response.text();
-            
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlText, 'text/html');
-            mainContent.innerHTML = doc.getElementById('main-content')?.innerHTML || htmlText;
-            
-            pageTitle.innerText = page.charAt(0).toUpperCase() + page.slice(1);
-            
-            // সংশ্লিষ্ট ডাইনামিক JS ফাইল লোড করা
-            loadDynamicScript(page);
-        }
-    } catch (err) {
-        console.error("Page Load Error:", err);
-        mainContent.innerHTML = `<div class="p-10 text-rose-500">Error: Could not load admin-${page}.html</div>`;
+
+    if (page === 'dashboard') {
+
+        refreshData(); // ড্যাশবোর্ড ডাটা রিফ্রেশ করবে
+
+    } else {
+
+        // অন্যান্য পেজের জন্য কন্টেন্ট টেমপ্লেট
+
+        mainContent.innerHTML = `
+
+            <div class="glass-card p-10 text-center animate-pulse">
+
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+
+                <h2 class="text-xl font-bold">Loading ${page}...</h2>
+
+                <p class="text-slate-400 mt-2">Connecting to ${BASE_URL}</p>
+
+            </div>`;
+
     }
+
 }
 
-// ৩. ডাইনামিক স্ক্রিপ্ট ইনজেক্টর
-function loadDynamicScript(page) {
-    const scriptId = `script-admin-${page}`;
-    const oldScript = document.getElementById(scriptId);
-    if (oldScript) oldScript.remove();
 
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = `js/admin-${page}.js`;
-    document.body.appendChild(script);
-}
 
-// ৪. ড্যাশবোর্ড ডাটা রিফ্রেশ ফাংশন
-async function refreshDashboardData() {
+// ৪. ব্যাকএন্ড থেকে ডাটা ফেচিং লজিক
+
+async function refreshData() {
+
     try {
-        const res = await fetch(`${BASE_URL}/orders`);
-        const orders = await res.json();
+
+        const [pRes, oRes] = await Promise.all([
+
+            fetch(`${BASE_URL}/products`).catch(() => null),
+
+            fetch(`${BASE_URL}/orders`).catch(() => null)
+
+        ]);
+
+        
+
+        if (!pRes || !oRes) throw new Error("Server Unreachable");
+
+
+
+        const products = await pRes.json();
+
+        const orders = await oRes.json();
+
+        
+
+        // ড্যাশবোর্ডের বিভিন্ন সেকশন আপডেট করা
+
+        updateStats(orders);
+
+        updateInsights(orders, products);
+
+        renderCharts(orders); 
+
+        updateOperations(orders); 
+
+        renderTopProducts(orders, products);
+
+        
+
+    } catch (err) {
+
+        console.error("Dashboard Sync Failed:", err);
+
+        // ডাটা লোড না হলে কার্ডে মেসেজ দেখাবে
+
         const incomeEl = document.getElementById('today-income');
-        const ordersEl = document.getElementById('month-orders');
-        
-        if (incomeEl) incomeEl.innerText = `৳${orders.length * 50}`; 
-        if (ordersEl) ordersEl.innerText = `${orders.length} Orders`;
-        
-        // ড্যাশবোর্ড চার্ট রেন্ডার
-        renderDashboardChart(orders);
-    } catch (err) {
-        console.error("Sync Error:", err);
+
+        if (incomeEl) incomeEl.innerText = "Error";
+
     }
+
 }
 
-// ৫. ড্যাশবোর্ড চার্ট রেন্ডার
-function renderDashboardChart(orders) {
-    const ctx = document.getElementById('revenueChart')?.getContext('2d');
-    if (!ctx) return;
+
+
+// ৫. কার্ড এবং চার্ট আপডেট ফাংশনসমূহ
+
+function updateStats(orders) {
+
+    const startOfToday = new Date();
+
+    startOfToday.setHours(0,0,0,0);
+
+    const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
+
+    const todayRev = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+
+    
+
+    const incomeEl = document.getElementById('today-income');
+
+    const orderCountEl = document.getElementById('month-orders');
+
+    if (incomeEl) incomeEl.innerText = `৳${todayRev.toLocaleString()}`;
+
+    if (orderCountEl) orderCountEl.innerText = `${todayOrders.length} Orders`;
+
+}
+
+
+
+function updateInsights(orders, products) {
+
+    const thirtyDaysAgo = new Date();
+
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentOrders = orders.filter(o => new Date(o.orderedAt) >= thirtyDaysAgo);
+
+    const totalRev = recentOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+
+    const avgValue = recentOrders.length > 0 ? (totalRev / recentOrders.length) : 0;
+
+    const stockAlerts = products.filter(p => p.stockQuantity <= 5).length;
+
+
+
+    const cards = document.querySelectorAll('.glass-card h4.text-2xl');
+
+    if (cards.length >= 4) {
+
+        cards[0].innerText = recentOrders.length;
+
+        cards[1].innerText = `৳${totalRev.toLocaleString()}`;
+
+        cards[2].innerText = `৳${Math.round(avgValue).toLocaleString()}`;
+
+        cards[3].innerText = stockAlerts;
+
+    }
+
+}
+
+
+
+function renderCharts(orders) {
+
+    renderRevenueChart(orders);
+
+    renderStatusChart(orders);
+
+}
+
+
+
+function renderRevenueChart(orders) {
+
+    const chartCanvas = document.getElementById('revenueChart');
+
+    if (!chartCanvas) return;
+
+    const ctx = chartCanvas.getContext('2d');
+
     if (revenueChartInstance) revenueChartInstance.destroy();
 
+    
+
+    const last7Orders = orders.slice(-7); 
+
+    const isDark = document.documentElement.classList.contains('dark');
+
+
+
     revenueChartInstance = new Chart(ctx, {
+
         type: 'line',
+
         data: {
-            labels: orders.slice(-7).map(o => new Date(o.orderedAt).toLocaleDateString()),
-            datasets: [{ label: 'Revenue', data: orders.slice(-7).map(o => o.totalAmount), borderColor: '#2563eb', tension: 0.4 }]
+
+            labels: last7Orders.map(o => new Date(o.orderedAt).toLocaleDateString('en-US', {day: 'numeric', month: 'short'})),
+
+            datasets: [{ 
+
+                label: 'Revenue',
+
+                data: last7Orders.map(o => o.totalAmount), 
+
+                borderColor: '#2563eb',
+
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+
+                tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#2563eb'
+
+            }]
+
         },
-        options: { responsive: true, maintainAspectRatio: false }
+
+        options: { 
+
+            responsive: true, maintainAspectRatio: false,
+
+            plugins: { legend: { display: false } },
+
+            scales: {
+
+                y: { beginAtZero: true, grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } },
+
+                x: { grid: { display: false } }
+
+            }
+
+        }
+
     });
+
 }
 
-// সিস্টেম ফাংশনসমূহ
+
+
+function renderStatusChart(orders) {
+
+    const canvas = document.getElementById('orderStatusChart');
+
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+
+    if (statusChartInstance) statusChartInstance.destroy();
+
+    
+
+    const pending = orders.filter(o => o.status === 'pending').length;
+
+    const completed = orders.filter(o => o.status === 'completed').length;
+
+    const rejected = orders.filter(o => o.status === 'rejected').length;
+
+
+
+    if (document.getElementById('total-orders-count')) document.getElementById('total-orders-count').innerText = orders.length;
+
+    if (document.getElementById('pending-count')) document.getElementById('pending-count').innerText = pending;
+
+    if (document.getElementById('completed-count')) document.getElementById('completed-count').innerText = completed;
+
+    if (document.getElementById('rejected-count')) document.getElementById('rejected-count').innerText = rejected;
+
+
+
+    statusChartInstance = new Chart(ctx, {
+
+        type: 'doughnut',
+
+        data: {
+
+            labels: ['Pending', 'Completed', 'Rejected'],
+
+            datasets: [{
+
+                data: [pending, completed, rejected],
+
+                backgroundColor: ['#f59e0b', '#10b981', '#f43f5e'],
+
+                hoverOffset: 4, borderWidth: 0, cutout: '80%'
+
+            }]
+
+        },
+
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+
+    });
+
+}
+
+
+
+function renderTopProducts(orders, products) {
+
+    const container = document.getElementById('top-products-list');
+
+    if (!container) return;
+
+    
+
+    const salesMap = {};
+
+    orders.forEach(order => {
+
+        order.items?.forEach(item => {
+
+            salesMap[item.productId] = (salesMap[item.productId] || 0) + item.quantity;
+
+        });
+
+    });
+
+    
+
+    const topItems = Object.entries(salesMap).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+    
+
+    if (topItems.length === 0) {
+
+        container.innerHTML = '<p class="text-xs text-slate-400">No sales data yet.</p>';
+
+        return;
+
+    }
+
+
+
+    let html = '<div class="w-full space-y-3 mt-4">';
+
+    topItems.forEach(([id, qty]) => {
+
+        const product = products.find(p => p._id === id) || { name: 'Unknown Product' };
+
+        html += `
+
+            <div class="flex justify-between items-center text-[11px] font-bold border-b border-slate-50 dark:border-slate-800 pb-2">
+
+                <span class="truncate pr-4 dark:text-slate-300">${product.name}</span>
+
+                <span class="text-blue-500">${qty} Sold</span>
+
+            </div>`;
+
+    });
+
+    html += '</div>';
+
+    container.innerHTML = html;
+
+}
+
+
+
+function updateOperations(orders) {
+
+    const pendingCount = orders.filter(o => o.status === 'pending').length;
+
+    const opMsgs = document.querySelectorAll('.operation-item p');
+
+    if (opMsgs.length > 0) {
+
+        opMsgs[0].innerText = `Process ${pendingCount} pending orders`;
+
+    }
+
+}
+
+
+
+// ৬. সাইডবার এবং থিম কন্ট্রোল
+
 function initSidebarToggle() {
+
     const sidebar = document.getElementById('main-sidebar');
+
     const toggleBtn = document.getElementById('sidebar-toggle');
-    if (toggleBtn) toggleBtn.onclick = () => sidebar.classList.toggle('minimized');
+
+    const toggleIcon = document.getElementById('toggle-icon');
+
+
+
+    if (!sidebar || !toggleBtn) return;
+
+
+
+    toggleBtn.onclick = () => {
+
+        sidebar.classList.toggle('minimized');
+
+        const isMinimized = sidebar.classList.contains('minimized');
+
+        if (toggleIcon) {
+
+            toggleIcon.className = isMinimized ? 'fas fa-chevron-right text-slate-400 text-xs' : 'fas fa-chevron-left text-slate-400 text-xs';
+
+        }
+
+        localStorage.setItem('sidebar-minimized', isMinimized);
+
+    };
+
+
+
+    if (localStorage.getItem('sidebar-minimized') === 'true') {
+
+        sidebar.classList.add('minimized');
+
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right text-slate-400 text-xs';
+
+    }
+
 }
 
-function initTheme() {
-    const toggle = document.getElementById('theme-toggle');
-    if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-    if (toggle) toggle.onclick = () => {
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    };
-}
+
 
 function handleAdminLogout() {
-    if(confirm("Are you sure?")) {
+
+    if(confirm("Are you sure you want to logout?")) {
+
         sessionStorage.removeItem('adminAuth'); 
+
         window.location.href = 'admin-login.html'; 
+
     }
+
+}
+
+
+
+function initTheme() {
+
+    const themeToggle = document.getElementById('theme-toggle');
+
+    const themeIcon = document.getElementById('theme-icon');
+
+    
+
+    const applyTheme = (isDark) => {
+
+        if (isDark) {
+
+            document.documentElement.classList.add('dark');
+
+            if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+        } else {
+
+            document.documentElement.classList.remove('dark');
+
+            if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon');
+
+        }
+
+    };
+
+
+
+    applyTheme(localStorage.getItem('theme') === 'dark');
+
+
+
+    if (themeToggle) {
+
+        themeToggle.onclick = () => {
+
+            const isDark = !document.documentElement.classList.contains('dark');
+
+            applyTheme(isDark);
+
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+            
+
+            // চার্ট রি-রেন্ডার করার জন্য (ডার্ক মোডে গ্রিড কালার ঠিক করতে)
+
+            if(revenueChartInstance) refreshData();
+
+        };
+
+    }
+
 }
