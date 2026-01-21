@@ -12,31 +12,35 @@ window.onload = () => {
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
     } else {
+        // রিফ্রেশ প্রোটেকশন: ড্যাশবোর্ড লোড হওয়ার সাথে সাথে সেশন ক্লিয়ার করা
         sessionStorage.removeItem('adminAuth'); 
 
         initDashboard();
         initTheme(); 
         initNavigation(); 
+        initSidebarToggle(); // সাইডবার টগল লজিক শুরু করা
     }
 };
 
-// ২. নেভিগেশন লজিক: সাইডবার এবং কার্ডের জন্য আলাদা লজিক
+// ১. নেভিগেশন লজিক: সাইডবার এবং কুইক অ্যাকশন কার্ড কানেক্ট করা
 function initNavigation() {
     // ক) Products পেজ
-    const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
-    if (prodCard) prodCard.onclick = () => {
+    const prodBtn = document.querySelector('.sidebar-item i.fa-box')?.parentElement || 
+                    document.getElementById('quick-products');
+    if (prodBtn) prodBtn.onclick = () => {
         sessionStorage.setItem('adminAuth', ADMIN_PASS);
         window.location.href = 'admin-products.html';
     };
 
     // খ) Orders পেজ
-    const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
-    if (orderCard) orderCard.onclick = () => {
+    const orderBtn = document.querySelector('.sidebar-item i.fa-shopping-cart')?.parentElement || 
+                     document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
+    if (orderBtn) orderBtn.onclick = () => {
         sessionStorage.setItem('adminAuth', ADMIN_PASS);
         window.location.href = 'admin-orders.html';
     };
 
-    // গ) Slider ম্যানেজমেন্ট (Chats কার্ড থেকে)
+    // গ) Slider ম্যানেজমেন্ট (Chats কার্ড থেকে রূপান্তর)
     const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement;
     if (sliderCard) {
         sliderCard.innerHTML = `<i class="fas fa-images text-purple-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Slider</span>`;
@@ -46,26 +50,47 @@ function initNavigation() {
         };
     }
 
-    // ঘ) Analytics কার্ড (এটি এখন আর User Intelligence ওপেন করবে না)
-    const analyticsCard = document.querySelector('.action-card i.fa-chart-line')?.parentElement;
-    if (analyticsCard) {
-        analyticsCard.onclick = () => {
-            console.log("Main analytics viewed on dashboard"); // ড্যাশবোর্ডেই থাকবে
-        };
-    }
-
-    // ঙ) User Intelligence নেভিগেশন (শুধু সাইডবারের নির্দিষ্ট আইকন থেকে)
-    const intelligenceSideBtn = document.querySelector('.sidebar-item i.fa-user-cog')?.parentElement;
-    if (intelligenceSideBtn) {
-        intelligenceSideBtn.onclick = () => {
-            // সিকিউরিটি সেশন সেট করে নতুন পেজে পাঠানো
+    // ঘ) User Intelligence নেভিগেশন (সাইডবার থেকে)
+    const intelligenceBtn = document.getElementById('side-intelligence') || 
+                            document.querySelector('.sidebar-item i.fa-user-cog')?.parentElement;
+    if (intelligenceBtn) {
+        intelligenceBtn.onclick = () => {
             sessionStorage.setItem('adminAuth', ADMIN_PASS); 
             window.location.href = 'admin-intelligence.html'; 
         };
     }
 }
 
-// থিম, স্ট্যাটাস এবং চার্ট লজিক (আগের মতোই থাকবে)
+// ২. সাইডবার মিনিমাইজ করার লজিক
+function initSidebarToggle() {
+    const sidebar = document.getElementById('main-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleIcon = document.getElementById('toggle-icon');
+
+    if (!sidebar || !toggleBtn) return;
+
+    // আগের সেভ করা অবস্থা (Minimized/Full) লোড করা
+    if (localStorage.getItem('sidebar-minimized') === 'true') {
+        sidebar.classList.add('minimized');
+        if (toggleIcon) toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+    }
+
+    toggleBtn.onclick = () => {
+        sidebar.classList.toggle('minimized');
+        const isMinimized = sidebar.classList.contains('minimized');
+        
+        // অ্যারো আইকন পরিবর্তন
+        if (toggleIcon) {
+            if (isMinimized) toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+            else toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+        }
+        
+        // অবস্থাটি ব্রাউজারে সেভ রাখা যাতে পেজ রিফ্রেশ করলেও ঠিক থাকে
+        localStorage.setItem('sidebar-minimized', isMinimized);
+    };
+}
+
+// থিম, ডাটা রিফ্রেশ এবং চার্ট লজিক আগের মতোই থাকবে
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
