@@ -109,9 +109,9 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr class="border-b dark:border-slate-800">
-                                <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Product Details</th>
+                                <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Product & Discount</th>
                                 <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Pricing</th>
-                                <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Stock Status</th>
+                                <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Inventory Status</th>
                                 <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-right">Actions</th>
                             </tr>
                         </thead>
@@ -127,17 +127,18 @@
         <div class="bg-white dark:bg-[#161021] w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
             <h3 id="modal-title" class="text-2xl font-black mb-6 text-left dark:text-white">Product Details</h3>
             <form id="inventory-form" class="space-y-4 text-left">
-                <input type="hidden" id="edit-id">
+                <input type="hidden" id="edit-id" value="">
+                
                 <input type="text" id="p-name" placeholder="Product Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white" required>
                 <div class="grid grid-cols-2 gap-4">
                     <input type="number" id="p-price" placeholder="Sale Price" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white" required>
-                    <input type="number" id="p-oldPrice" placeholder="Old Price" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white">
+                    <input type="number" id="p-oldPrice" placeholder="Old Price (Discount)" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white">
                 </div>
                 <input type="number" id="p-stock" placeholder="Stock Quantity" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white" required>
                 <input type="text" id="p-image" placeholder="Image URL (e.g. https://...)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white" required>
                 <textarea id="p-desc" placeholder="Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm h-24 dark:text-white"></textarea>
                 <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="toggleModal()" class="flex-1 font-bold text-xs text-slate-400 uppercase">Cancel</button>
+                    <button type="button" onclick="toggleModal()" class="flex-1 font-bold text-xs text-slate-400 uppercase hover:text-slate-600 transition">Cancel</button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-blue-700 transition">Save Product</button>
                 </div>
             </form>
@@ -180,10 +181,12 @@
 
         // মডাল ফাংশন
         function toggleModal() {
-            document.getElementById('p-modal').classList.toggle('hidden');
-            if(document.getElementById('p-modal').classList.contains('hidden')) {
+            const modal = document.getElementById('p-modal');
+            modal.classList.toggle('hidden');
+            if(modal.classList.contains('hidden')) {
                 document.getElementById('inventory-form').reset();
                 document.getElementById('edit-id').value = '';
+                document.getElementById('modal-title').innerText = "Product Details";
             }
         }
 
