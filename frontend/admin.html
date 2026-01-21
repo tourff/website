@@ -16,6 +16,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
         
+        /* ১. সাইডবার স্মুথ ট্রানজিশন লজিক */
         #main-sidebar { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; }
         #main-sidebar.minimized { width: 85px; padding: 24px 12px; }
         #main-sidebar.minimized .sidebar-logo h1, #main-sidebar.minimized .sidebar-logo p, 
@@ -24,6 +25,7 @@
         #main-sidebar.minimized .sidebar-item { justify-content: center; padding: 12px 0; }
         #main-sidebar.minimized .sidebar-item i { margin: 0; font-size: 18px; }
 
+        /* ড্যাশবোর্ড স্টাইল */
         body { background-color: #f8fafc; color: #1e293b; }
         .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; transition: 0.3s; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; }
         .sidebar-item:hover, .sidebar-item.active { background: #f1f5f9; color: #2563eb; }
@@ -81,7 +83,7 @@
                 <nav class="space-y-1">
                     <div class="sidebar-item"><i class="fas fa-shield-virus text-teal-500"></i> <span>Fraud Control</span> <span class="badge-new">NEW</span></div>
                     <div id="side-intelligence" class="sidebar-item"><i class="fas fa-user-cog text-slate-500"></i> <span>User Intelligence</span> <span class="badge-new">NEW</span></div>
-                    <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
+                    <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full text-left"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
                 </nav>
             </div>
         </div>
@@ -122,11 +124,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="glass-card p-8 border-l-4 border-blue-500">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today Revenue</p>
-                            <h4 id="today-income" class="text-4xl font-black mt-2">৳0</h4>
+                            <h4 id="today-income" class="text-4xl font-black mt-2 text-slate-800 dark:text-white">৳0</h4>
                         </div>
                         <div class="glass-card p-8 border-l-4 border-green-500">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today Orders</p>
-                            <h4 id="month-orders" class="text-4xl font-black mt-2">0 Orders</h4>
+                            <h4 id="month-orders" class="text-4xl font-black mt-2 text-slate-800 dark:text-white">0 Orders</h4>
                         </div>
                     </div>
                 </div>
@@ -134,10 +136,7 @@
                     <h3 class="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-6">Daily Operations</h3>
                     <div class="space-y-4">
                         <div class="operation-item border-l-4 border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10">
-                            <input type="checkbox" class="rounded"><div class="ml-3"><p class="text-xs font-bold">Process 6 pending orders</p><span class="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded font-bold uppercase">SYSTEM</span></div>
-                        </div>
-                        <div class="operation-item border-l-4 border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10">
-                            <input type="checkbox" class="rounded"><div class="ml-3"><p class="text-xs font-bold">Review 1 new orders</p><span class="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded font-bold uppercase">SYSTEM</span></div>
+                            <input type="checkbox" class="rounded"><div class="ml-3"><p class="text-xs font-bold">Process pending orders</p><span class="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded font-bold uppercase">SYSTEM</span></div>
                         </div>
                     </div>
                 </section>
@@ -149,7 +148,7 @@
                     <div class="lg:col-span-2"><section class="glass-card p-6"><div class="flex justify-between items-center mb-6"><h3 class="font-black text-slate-800 dark:text-white">Revenue Trend</h3><span class="text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded font-bold uppercase">Last 14 Days</span></div><div class="h-[280px]"><canvas id="revenueChart"></canvas></div></section></div>
                     <section class="glass-card p-6 text-center">
                         <h3 class="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-8 text-left">Order Status</h3>
-                        <div class="relative flex justify-center items-center h-[200px]"><canvas id="orderStatusChart"></canvas><div class="absolute"><p id="total-orders-count" class="text-3xl font-black">0</p><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p></div></div>
+                        <div class="relative flex justify-center items-center h-[200px]"><canvas id="orderStatusChart"></canvas><div class="absolute"><p id="total-orders-count" class="text-3xl font-black text-slate-800 dark:text-white">0</p><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p></div></div>
                         <div class="mt-8 space-y-3 px-4">
                             <div class="flex justify-between text-[10px] font-bold"><span class="text-yellow-500">Pending</span><span id="pending-count">0</span></div>
                             <div class="flex justify-between text-[10px] font-bold border-y border-slate-50 dark:border-slate-800 py-2"><span class="text-green-500">Completed</span><span id="completed-count">0</span></div>
@@ -191,27 +190,6 @@
         </div>
     </main>
 
-    <script>
-        const sidebar = document.getElementById('main-sidebar');
-        const toggleBtn = document.getElementById('sidebar-toggle');
-        const toggleIcon = document.getElementById('toggle-icon');
-
-        toggleBtn.onclick = () => {
-            sidebar.classList.toggle('minimized');
-            const isMinimized = sidebar.classList.contains('minimized');
-            if (isMinimized) {
-                toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
-            } else {
-                toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
-            }
-            localStorage.setItem('sidebar-minimized', isMinimized);
-        };
-
-        if (localStorage.getItem('sidebar-minimized') === 'true') {
-            sidebar.classList.add('minimized');
-            toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
-        }
-    </script>
     <script src="js/admin.js"></script>
 </body>
 </html>
