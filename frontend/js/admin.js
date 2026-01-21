@@ -1,6 +1,7 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 const ADMIN_PASS = "turjo0424";
 let revenueChartInstance = null;
+let statusChartInstance = null; // ডোনাট চার্টের জন্য নতুন ভেরিয়েবল
 
 window.onload = () => {
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
@@ -12,64 +13,34 @@ window.onload = () => {
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
     } else {
-        // রিফ্রেশ প্রোটেকশন: ড্যাশবোর্ড লোড হওয়ার সাথে সাথে সেশন ক্লিয়ার করা
         sessionStorage.removeItem('adminAuth'); 
-
         initDashboard();
         initTheme(); 
         initNavigation(); 
-        initSidebarToggle(); // সাইডবার টগল লজিক শুরু করা
+        initSidebarToggle();
     }
 };
 
-// ১. নেভিগেশন লজিক: সাইডবার এবং কুইক অ্যাকশন কার্ড কানেক্ট করা
 function initNavigation() {
-    // কমন ফাংশন: সেশন সেট করে পেজ পরিবর্তন করা
     const goToPage = (page) => {
         sessionStorage.setItem('adminAuth', ADMIN_PASS);
         window.location.href = page;
     };
 
-    // ক) Dashboard
-    const dashBtn = document.querySelector('.sidebar-item i.fa-th-large')?.parentElement;
-    if (dashBtn) dashBtn.onclick = () => goToPage('admin.html');
-
-    // খ) Products পেজ (সাইডবার এবং কুইক কার্ড উভয়ই)
-    const prodBtn = document.querySelector('.sidebar-item i.fa-box')?.parentElement || 
-                    document.getElementById('quick-products');
-    if (prodBtn) prodBtn.onclick = () => goToPage('admin-products.html');
-
-    // গ) Orders পেজ
-    const orderBtn = document.querySelector('.sidebar-item i.fa-shopping-cart')?.parentElement || 
-                     document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
-    if (orderBtn) orderBtn.onclick = () => goToPage('admin-orders.html');
-
-    // ঘ) User Intelligence নেভিগেশন
-    const intelligenceBtn = document.getElementById('side-intelligence') || 
-                            document.querySelector('.sidebar-item i.fa-user-cog')?.parentElement;
-    if (intelligenceBtn) intelligenceBtn.onclick = () => goToPage('admin-intelligence.html');
-
-    // ঙ) Slider ম্যানেজমেন্ট (Chats কার্ড থেকে রূপান্তর)
-    const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement ||
-                       document.querySelector('.action-card i.fa-images')?.parentElement;
-    if (sliderCard) {
-        sliderCard.innerHTML = `<i class="fas fa-images text-purple-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Slider</span>`;
-        sliderCard.onclick = () => goToPage('admin-slider.html');
-    }
-
-    // চ) Fraud Control
-    const fraudBtn = document.querySelector('.sidebar-item i.fa-shield-virus')?.parentElement;
-    if (fraudBtn) fraudBtn.onclick = () => goToPage('admin-fraud.html');
-
-    // ছ) Analytics & Reports (আপাতত লগ চেক করা হচ্ছে)
-    const analyticsBtn = document.querySelector('.sidebar-item i.fa-chart-pie')?.parentElement;
-    if (analyticsBtn) analyticsBtn.onclick = () => console.log("Analytics Clicked");
-    
-    const reportsBtn = document.querySelector('.sidebar-item i.fa-file-alt')?.parentElement;
-    if (reportsBtn) reportsBtn.onclick = () => console.log("Reports Clicked");
+    // সব মেনু নেভিগেশন কানেক্ট করা
+    document.querySelectorAll('.sidebar-item, .action-card-lite').forEach(btn => {
+        btn.onclick = () => {
+            const text = btn.innerText.toLowerCase();
+            if (text.includes('dashboard')) goToPage('admin.html');
+            else if (text.includes('products')) goToPage('admin-products.html');
+            else if (text.includes('orders')) goToPage('admin-orders.html');
+            else if (text.includes('intelligence')) goToPage('admin-intelligence.html');
+            else if (text.includes('slider')) goToPage('admin-slider.html');
+            else if (text.includes('fraud')) goToPage('admin-fraud.html');
+        };
+    });
 }
 
-// ২. সাইডবার মিনিমাইজ করার লজিক
 function initSidebarToggle() {
     const sidebar = document.getElementById('main-sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
@@ -77,7 +48,6 @@ function initSidebarToggle() {
 
     if (!sidebar || !toggleBtn) return;
 
-    // আগের সেভ করা অবস্থা (Minimized/Full) লোড করা
     if (localStorage.getItem('sidebar-minimized') === 'true') {
         sidebar.classList.add('minimized');
         if (toggleIcon) toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
@@ -86,19 +56,142 @@ function initSidebarToggle() {
     toggleBtn.onclick = () => {
         sidebar.classList.toggle('minimized');
         const isMinimized = sidebar.classList.contains('minimized');
-        
-        // অ্যারো আইকন পরিবর্তন
         if (toggleIcon) {
             if (isMinimized) toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
             else toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
         }
-        
-        // অবস্থাটি ব্রাউজারে সেভ রাখা যাতে পেজ রিফ্রেশ করলেও ঠিক থাকে
         localStorage.setItem('sidebar-minimized', isMinimized);
     };
 }
 
-// থিম, ডাটা রিফ্রেশ এবং চার্ট লজিক
+async function initDashboard() {
+    refreshData();
+    setInterval(refreshData, 30000); 
+}
+
+async function refreshData() {
+    try {
+        const [pRes, oRes] = await Promise.all([
+            fetch(`${BASE_URL}/products`),
+            fetch(`${BASE_URL}/orders`)
+        ]);
+        const products = await pRes.json();
+        const orders = await oRes.json();
+        
+        updateStats(orders);
+        renderCharts(orders); // রেভিনিউ এবং স্ট্যাটাস উভয় চার্ট
+        updateOperations(orders); // ডেইলি অপারেশন আপডেট
+        
+    } catch (err) {
+        console.error("Dashboard Sync Failed:", err);
+    }
+}
+
+function updateStats(orders) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0,0,0,0);
+    const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
+    const todayRev = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    
+    const incomeEl = document.getElementById('today-income');
+    const orderCountEl = document.getElementById('month-orders');
+    
+    if (incomeEl) incomeEl.innerText = `৳${todayRev.toLocaleString()}`;
+    if (orderCountEl) orderCountEl.innerText = `${orders.length} Orders`;
+}
+
+function renderCharts(orders) {
+    renderRevenueChart(orders);
+    renderStatusChart(orders);
+}
+
+// ১. রেভিনিউ ট্রেন্ড চার্ট (Line Chart)
+function renderRevenueChart(orders) {
+    const chartCanvas = document.getElementById('revenueChart');
+    if (!chartCanvas) return;
+    const ctx = chartCanvas.getContext('2d');
+    if (revenueChartInstance) revenueChartInstance.destroy();
+
+    const last7Orders = orders.slice(-7); 
+    const isDark = document.documentElement.classList.contains('dark');
+
+    revenueChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: last7Orders.map(o => new Date(o.orderedAt).toLocaleDateString('en-US', {day: 'numeric', month: 'short'})),
+            datasets: [{ 
+                label: 'Revenue',
+                data: last7Orders.map(o => o.totalAmount), 
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.4, 
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#2563eb'
+            }]
+        },
+        options: { 
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+// ২. অর্ডার স্ট্যাটাস চার্ট (Donut Chart)
+function renderStatusChart(orders) {
+    const canvas = document.getElementById('orderStatusChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (statusChartInstance) statusChartInstance.destroy();
+
+    const pending = orders.filter(o => o.status === 'pending').length;
+    const completed = orders.filter(o => o.status === 'completed').length;
+    const rejected = orders.filter(o => o.status === 'rejected').length;
+
+    // সেন্টারে টোটাল কাউন্ট আপডেট
+    document.getElementById('total-orders-count').innerText = orders.length;
+
+    statusChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Completed', 'Rejected'],
+            datasets: [{
+                data: [pending, completed, rejected],
+                backgroundColor: ['#f59e0b', '#10b981', '#f43f5e'],
+                hoverOffset: 4,
+                borderWidth: 0,
+                cutout: '80%'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// ডেইলি অপারেশন সেকশন অটো-আপডেট
+function updateOperations(orders) {
+    const pendingCount = orders.filter(o => o.status === 'pending').length;
+    const operationsContainer = document.querySelector('.space-y-4'); // Daily operations container
+    
+    if (operationsContainer && pendingCount > 0) {
+        // নতুন পেন্ডিং অর্ডার থাকলে অপারেশন লিস্ট আপডেট করা
+        // এখানে আপনি আপনার প্রয়োজনমতো আরও লজিক যোগ করতে পারেন
+    }
+}
+
+function handleAdminLogout() {
+    if(confirm("Are you sure?")) {
+        sessionStorage.removeItem('adminAuth'); 
+        window.location.href = 'admin-login.html'; 
+    }
+}
+
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
@@ -117,90 +210,5 @@ function initTheme() {
             }
             refreshData(); 
         });
-    }
-}
-
-async function initDashboard() {
-    refreshData();
-    setInterval(refreshData, 30000); 
-}
-
-async function refreshData() {
-    try {
-        const [pRes, oRes] = await Promise.all([
-            fetch(`${BASE_URL}/products`),
-            fetch(`${BASE_URL}/orders`)
-        ]);
-        const products = await pRes.json();
-        const orders = await oRes.json();
-        updateStats(orders);
-        renderChart(orders);
-        checkStockStatus(products); 
-    } catch (err) {
-        console.error("Dashboard Sync Failed:", err);
-    }
-}
-
-function checkStockStatus(products) {
-    const outOfStockItems = products.filter(p => p.stockQuantity <= 0);
-    const alertBox = document.getElementById('stock-alert-container');
-    const alertMsg = document.getElementById('stock-alert-msg');
-    if (outOfStockItems.length > 0 && alertBox) {
-        alertBox.classList.remove('hidden');
-        alertMsg.innerText = `${outOfStockItems.length} items are currently out of stock!`;
-    } else if (alertBox) {
-        alertBox.classList.add('hidden');
-    }
-}
-
-function updateStats(orders) {
-    const startOfToday = new Date();
-    startOfToday.setHours(0,0,0,0);
-    const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
-    const todayRev = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
-    const incomeEl = document.getElementById('today-income');
-    const orderCountEl = document.getElementById('month-orders');
-    if (incomeEl) incomeEl.innerText = `৳${todayRev.toLocaleString()}`;
-    if (orderCountEl) orderCountEl.innerText = `${orders.length} orders`;
-}
-
-function renderChart(orders) {
-    const chartCanvas = document.getElementById('revenueChart');
-    if (!chartCanvas) return;
-    const ctx = chartCanvas.getContext('2d');
-    if (revenueChartInstance) revenueChartInstance.destroy();
-    const last7Orders = orders.slice(-7); 
-    const isDark = document.documentElement.classList.contains('dark');
-    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
-    const textColor = isDark ? '#94a3b8' : '#64748b';
-    revenueChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: last7Orders.map(o => new Date(o.orderedAt).toLocaleDateString()),
-            datasets: [{ 
-                label: 'Revenue',
-                data: last7Orders.map(o => o.totalAmount), 
-                borderColor: isDark ? '#f43f5e' : '#2563eb',
-                backgroundColor: isDark ? 'rgba(244, 63, 94, 0.1)' : 'rgba(37, 99, 235, 0.1)',
-                tension: 0.4, 
-                fill: true 
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
-                x: { grid: { display: false }, ticks: { color: textColor } }
-            }
-        }
-    });
-}
-
-function handleAdminLogout() {
-    if(confirm("Are you sure?")) {
-        sessionStorage.removeItem('adminAuth'); 
-        window.location.href = 'admin-login.html'; 
     }
 }
