@@ -8,36 +8,62 @@ window.onload = () => {
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // ১. সিকিউরিটি চেক: লগইন করা না থাকলে লগইন পেজে রিডাইরেক্ট করবে
+    // ১. সিকিউরিটি চেক
     const auth = localStorage.getItem('adminAuth');
     if (auth !== ADMIN_PASS) {
-        // আলাদা ফোল্ডার নেই, তাই সরাসরি ফাইলের নাম
         window.location.href = 'admin-login.html'; 
     } else {
         initDashboard();
+        initTheme(); // থিম লজিক শুরু করা
     }
 };
 
+// ২. থিম (ডার্ক/লাইট মোড) ইনিশিয়ালাইজেশন
+function initTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    
+    // আগের সেভ করা থিম চেক করা
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+    }
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+            
+            // মোড বদলানোর সাথে সাথে চার্ট আবার রেন্ডার করা (ডার্ক মোডে গ্রিড কালার ঠিক রাখার জন্য)
+            refreshData(); 
+        });
+    }
+}
+
 async function initDashboard() {
     refreshData();
-    setInterval(refreshData, 30000); // প্রতি ৩০ সেকেন্ড পর পর অটো আপডেট
+    setInterval(refreshData, 30000); 
 }
 
 async function refreshData() {
     try {
         const response = await fetch(`${BASE_URL}/orders`);
         const orders = await response.json();
-        
         updateStats(orders);
         renderChart(orders);
-        
     } catch (err) {
         console.error("Dashboard Sync Failed:", err);
     }
 }
 
 function updateStats(orders) {
-    // আজকের আয়ের হিসাব (Revenue)
     const startOfToday = new Date();
     startOfToday.setHours(0,0,0,0);
     const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
@@ -59,6 +85,11 @@ function renderChart(orders) {
     
     const last7Orders = orders.slice(-7); 
     
+    // ডার্ক মোড অনুযায়ী গ্রিড কালার সেট করা
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    
     revenueChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -66,8 +97,8 @@ function renderChart(orders) {
             datasets: [{ 
                 label: 'Revenue Growth',
                 data: last7Orders.map(o => o.totalAmount), 
-                borderColor: '#2563eb', 
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderColor: isDark ? '#f43f5e' : '#2563eb', // ডার্ক মোডে লাল, লাইটে নীল
+                backgroundColor: isDark ? 'rgba(244, 63, 94, 0.1)' : 'rgba(37, 99, 235, 0.1)',
                 tension: 0.4, 
                 fill: true 
             }]
@@ -77,17 +108,23 @@ function renderChart(orders) {
             maintainAspectRatio: false, 
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-                x: { grid: { display: false } }
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: gridColor },
+                    ticks: { color: textColor }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { color: textColor }
+                }
             }
         }
     });
 }
 
-// ২. লগআউট ফাংশন আপডেট
 function handleAdminLogout() {
     if(confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem('adminAuth'); // অথেনটিকেশন ডাটা মুছে ফেলা
-        window.location.href = 'admin-login.html'; // সরাসরি লগইন পেজে ফেরত
+        localStorage.removeItem('adminAuth'); 
+        window.location.href = 'admin-login.html'; 
     }
 }
