@@ -34,9 +34,10 @@ function initNavigation() {
             if (text.includes('dashboard')) loadPage('dashboard');
             else if (text.includes('products')) window.location.href = 'admin-products.html'; 
             else if (text.includes('orders')) window.location.href = 'admin-orders.html'; 
-            else if (text.includes('slider')) loadPage('slider'); // স্লাইডার লোড হবে
+            else if (text.includes('slider')) loadPage('slider');
             else if (text.includes('analytics')) loadPage('analytics');
-            else if (text.includes('intelligence')) loadPage('intelligence');
+            // User Intelligence এর জন্য সরাসরি ফাইল রিডাইরেক্ট
+            else if (text.includes('intelligence')) window.location.href = 'admin-intelligence.html';
         };
     });
 }
@@ -48,7 +49,6 @@ async function loadPage(page) {
     if (page === 'dashboard') {
         refreshData(); 
     } else if (page === 'slider') {
-        // স্লাইডার ম্যানেজমেন্ট ইন্টারফেস
         mainContent.innerHTML = `
             <div class="space-y-8 animate-in fade-in duration-500 text-left">
                 <div>
@@ -87,7 +87,6 @@ async function loadPage(page) {
 }
 
 // --- স্লাইডার ফাংশনসমূহ ---
-
 async function fetchSliders() {
     const container = document.getElementById('slider-list');
     try {
@@ -144,8 +143,7 @@ async function deleteSlider(id) {
     }
 }
 
-// --- ড্যাশবোর্ড ও অন্যান্য ফাংশন (অপরিবর্তিত) ---
-
+// --- ড্যাশবোর্ড ও অ্যানালিটিক্স ফাংশনসমূহ ---
 async function refreshData() {
     try {
         const [pRes, oRes] = await Promise.all([
