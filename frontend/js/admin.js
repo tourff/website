@@ -9,10 +9,12 @@ window.onload = () => {
     initSidebarToggle();
     initNavigation();
     
+    // বর্তমান তারিখ প্রদর্শন
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
+    // সিকিউরিটি চেক
     const auth = sessionStorage.getItem('adminAuth'); 
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
@@ -21,6 +23,7 @@ window.onload = () => {
     }
 };
 
+// ১. নেভিগেশন লজিক আপডেট (Slider এবং Orders যোগ করা হয়েছে)
 function initNavigation() {
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.onclick = () => {
@@ -28,15 +31,24 @@ function initNavigation() {
             if(!span) return;
             const text = span.innerText.toLowerCase();
             
+            // অ্যাক্টিভ ক্লাস ম্যানেজমেন্ট
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
             // পেজ নেভিগেশন লজিক
-            if (text.includes('dashboard')) loadPage('dashboard');
-            else if (text.includes('products')) window.location.href = 'admin-products.html'; 
-            else if (text.includes('orders')) loadPage('orders');
-            else if (text.includes('analytics')) loadPage('analytics');
-            else if (text.includes('intelligence')) loadPage('intelligence');
+            if (text.includes('dashboard')) {
+                loadPage('dashboard');
+            } else if (text.includes('products')) {
+                window.location.href = 'admin-products.html'; 
+            } else if (text.includes('orders')) {
+                window.location.href = 'admin-orders.html'; // Orders পেজে যাবে
+            } else if (text.includes('slider')) {
+                window.location.href = 'admin-slider.html'; // Slider পেজে যাবে
+            } else if (text.includes('analytics')) {
+                loadPage('analytics');
+            } else if (text.includes('intelligence')) {
+                loadPage('intelligence');
+            }
         };
     });
 }
@@ -48,6 +60,7 @@ async function loadPage(page) {
     if (page === 'dashboard') {
         refreshData(); 
     } else {
+        // অন্যান্য পেজের জন্য লোডিং স্টেট
         mainContent.innerHTML = `
             <div class="glass-card p-10 text-center animate-pulse">
                 <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
@@ -70,7 +83,7 @@ async function refreshData() {
         const orders = await oRes.json();
         
         updateStats(orders);
-        updateInsights(orders, products); // ইনভেন্টরি ডাটা পাস করা হয়েছে
+        updateInsights(orders, products);
         renderCharts(orders); 
         updateOperations(orders); 
         renderTopProducts(orders, products);
@@ -101,7 +114,6 @@ function updateInsights(orders, products) {
     const totalRev = recentOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     const avgValue = recentOrders.length > 0 ? (totalRev / recentOrders.length) : 0;
 
-    // ইনভেন্টরি অ্যালার্ট লজিক (নতুন)
     const outOfStock = products.filter(p => p.stockQuantity <= 0).length;
     const lowStock = products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 5).length;
     const totalAlerts = outOfStock + lowStock;
@@ -112,13 +124,11 @@ function updateInsights(orders, products) {
         cards[1].innerText = `৳${totalRev.toLocaleString()}`;
         cards[2].innerText = `৳${Math.round(avgValue).toLocaleString()}`;
         
-        // ৪ নম্বর কার্ডে স্টক অ্যালার্ট সংখ্যা বসানো
         cards[3].innerText = totalAlerts;
         cards[3].className = totalAlerts > 0 ? "text-2xl font-black text-rose-500" : "text-2xl font-black text-emerald-500";
     }
 }
 
-// চার্ট এবং অন্যান্য ফাংশন আগের মতোই থাকবে (নিচে সংক্ষেপে দেওয়া হলো)
 function renderCharts(orders) { renderRevenueChart(orders); renderStatusChart(orders); }
 
 function renderRevenueChart(orders) {
