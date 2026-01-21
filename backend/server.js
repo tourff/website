@@ -30,9 +30,11 @@ const Product = mongoose.model('Product', new mongoose.Schema({
     category: String
 }));
 
+// স্লাইডার/ব্যানার মডেল (এটিতে link এবং duration যুক্ত করা হয়েছে)
 const Banner = mongoose.model('Banner', new mongoose.Schema({
     imageUrl: { type: String, required: true },
-    displayTime: { type: Number, default: 5000 }
+    link: { type: String, default: "" },
+    duration: { type: Number, default: 5 }
 }));
 
 const User = mongoose.model('User', new mongoose.Schema({
@@ -53,17 +55,13 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- রুটসমূহ ---
 
-// ১. ড্যাশবোর্ডের মূল অ্যানালিটিক্স (ভিডিওর মতো কার্ডগুলোর জন্য)
+// ১. ড্যাশবোর্ডের মূল অ্যানালিটিক্স
 app.get('/admin/analytics', async (req, res) => {
     try {
         const totalProducts = await Product.countDocuments();
         const totalUsers = await User.countDocuments();
         const orders = await Order.find();
-        
-        // আয়ের হিসাব (Revenue)
         const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-        
-        // আজকের আয়ের হিসাব (ফিল্টারিং)
         const startOfToday = new Date();
         startOfToday.setHours(0,0,0,0);
         const todayOrders = await Order.find({ orderedAt: { $gte: startOfToday } });
@@ -81,19 +79,17 @@ app.get('/admin/analytics', async (req, res) => {
     }
 });
 
-// ২. গ্রাফ ডাটা রুট (অ্যাডমিন প্যানেলের গ্রাফের জন্য গত ৭ দিনের ডাটা)
+// ২. গ্রাফ ডাটা রুট
 app.get('/admin/chart-data', async (req, res) => {
     try {
-        const orders = await Order.find()
-            .sort({ orderedAt: 1 })
-            .limit(10); // শেষ ১০টি অর্ডারের ডাটা পাঠাবে গ্রাফের জন্য
+        const orders = await Order.find().sort({ orderedAt: 1 }).limit(10);
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "Chart data failed!" });
     }
 });
 
-// ৩. সব অর্ডার ফেচ করা (নতুনগুলো উপরে)
+// ৩. সব অর্ডার ফেচ করা
 app.get('/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ orderedAt: -1 });
@@ -124,7 +120,7 @@ app.delete('/admin/delete-order/:id', async (req, res) => {
     }
 });
 
-// অথেনটিকেশন রুটসমূহ
+// ৬. অথেনটিকেশন রুটসমূহ
 app.post('/auth/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -151,7 +147,7 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
-// প্রোডাক্ট রুটসমূহ
+// ৭. প্রোডাক্ট রুটসমূহ
 app.get('/products', async (req, res) => {
     const products = await Product.find();
     res.json(products);
@@ -163,21 +159,62 @@ app.post('/admin/add-product', async (req, res) => {
     res.status(201).json(product);
 });
 
+// প্রোডাক্ট আপডেট রুট
+app.put('/admin/edit-product/:id', async (req, res) => {
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(500).json({ message: "Update failed" });
+    }
+});
+
 app.delete('/admin/delete-product/:id', async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ message: "Product deleted" });
 });
 
-// ব্যানার রুটসমূহ
-app.get('/banners', async (req, res) => {
-    const banners = await Banner.find();
-    res.json(banners);
+// ৮. স্লাইডার/ব্যানার রুটসমূহ (সংশোধিত)
+
+// ফ্রন্টএন্ডে লোড করার জন্য GET রুট
+app.get('/sliders', async (req, res) => {
+    try {
+        const banners = await Banner.find();
+        res.json(banners);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch sliders" });
+    }
 });
 
-app.post('/admin/add-banner', async (req, res) => {
-    const banner = new Banner(req.body);
-    await banner.save();
-    res.status(201).json(banner);
+// নতুন স্লাইডার অ্যাড করা
+app.post('/admin/add-slider', async (req, res) => {
+    try {
+        const banner = new Banner(req.body);
+        await banner.save();
+        res.status(201).json(banner);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to add slider" });
+    }
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on port ${PORT}`))
+// স্লাইডার আপডেট করা
+app.put('/admin/edit-slider/:id', async (req, res) => {
+    try {
+        const updatedSlider = await Banner.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedSlider);
+    } catch (err) {
+        res.status(500).json({ message: "Update failed" });
+    }
+});
+
+// স্লাইডার ডিলিট করা
+app.delete('/admin/delete-slider/:id', async (req, res) => {
+    try {
+        await Banner.findByIdAndDelete(req.params.id);
+        res.json({ message: "Slider deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Delete failed" });
+    }
+});
+
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on port ${PORT}`));
