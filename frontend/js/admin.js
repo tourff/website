@@ -5,18 +5,14 @@ let revenueChartInstance = null;
 window.onload = () => {
     // হেডার ডেট সেট করা
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', options);
+    const dateEl = document.getElementById('current-date');
+    if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // সিকিউরিটি চেক
+    // ১. সিকিউরিটি চেক: লগইন করা না থাকলে লগইন পেজে রিডাইরেক্ট করবে
     const auth = localStorage.getItem('adminAuth');
     if (auth !== ADMIN_PASS) {
-        const input = prompt("Enter Admin Password:");
-        if (input === ADMIN_PASS) {
-            localStorage.setItem('adminAuth', ADMIN_PASS);
-            initDashboard();
-        } else {
-            window.location.href = '../index.html'; // ভুল পাসওয়ার্ডে হোম পেজে ফেরা
-        }
+        // আলাদা ফোল্ডার নেই, তাই সরাসরি ফাইলের নাম
+        window.location.href = 'admin-login.html'; 
     } else {
         initDashboard();
     }
@@ -41,18 +37,24 @@ async function refreshData() {
 }
 
 function updateStats(orders) {
-    // আজকের আয়ের হিসাব (Revenue)
+    // আজকের আয়ের হিসাব (Revenue)
     const startOfToday = new Date();
     startOfToday.setHours(0,0,0,0);
     const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
     const todayRev = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     
-    document.getElementById('today-income').innerText = `৳${todayRev.toLocaleString()}`;
-    document.getElementById('month-orders').innerText = `${orders.length} orders`;
+    const incomeEl = document.getElementById('today-income');
+    const orderCountEl = document.getElementById('month-orders');
+    
+    if (incomeEl) incomeEl.innerText = `৳${todayRev.toLocaleString()}`;
+    if (orderCountEl) orderCountEl.innerText = `${orders.length} orders`;
 }
 
 function renderChart(orders) {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const chartCanvas = document.getElementById('revenueChart');
+    if (!chartCanvas) return;
+
+    const ctx = chartCanvas.getContext('2d');
     if (revenueChartInstance) revenueChartInstance.destroy();
     
     const last7Orders = orders.slice(-7); 
@@ -82,9 +84,10 @@ function renderChart(orders) {
     });
 }
 
+// ২. লগআউট ফাংশন আপডেট
 function handleAdminLogout() {
     if(confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem('adminAuth');
-        window.location.href = '../index.html'; // লগআউট করে মূল পেজে ফেরা
+        localStorage.removeItem('adminAuth'); // অথেনটিকেশন ডাটা মুছে ফেলা
+        window.location.href = 'admin-login.html'; // সরাসরি লগইন পেজে ফেরত
     }
 }
