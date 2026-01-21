@@ -1,7 +1,7 @@
 const BASE_URL = 'https://website-production-f869.up.railway.app';
 const ADMIN_PASS = "turjo0424";
 let revenueChartInstance = null;
-let statusChartInstance = null; // ডোনাট চার্টের জন্য নতুন ভেরিয়েবল
+let statusChartInstance = null; 
 
 window.onload = () => {
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
@@ -27,7 +27,6 @@ function initNavigation() {
         window.location.href = page;
     };
 
-    // সব মেনু নেভিগেশন কানেক্ট করা
     document.querySelectorAll('.sidebar-item, .action-card-lite').forEach(btn => {
         btn.onclick = () => {
             const text = btn.innerText.toLowerCase();
@@ -79,11 +78,36 @@ async function refreshData() {
         const orders = await oRes.json();
         
         updateStats(orders);
-        renderCharts(orders); // রেভিনিউ এবং স্ট্যাটাস উভয় চার্ট
-        updateOperations(orders); // ডেইলি অপারেশন আপডেট
+        updateInsights(orders, products); // নতুন ইনসাইটস কার্ড আপডেট
+        renderCharts(orders); 
+        updateOperations(orders); 
+        renderTopProducts(orders, products); // সেরা প্রোডাক্ট তালিকা
         
     } catch (err) {
         console.error("Dashboard Sync Failed:", err);
+    }
+}
+
+// ইনসাইটস কার্ডস (30D Stats) আপডেট লজিক
+function updateInsights(orders, products) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentOrders = orders.filter(o => new Date(o.orderedAt) >= thirtyDaysAgo);
+    const totalRev = recentOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const avgValue = recentOrders.length > 0 ? (totalRev / recentOrders.length) : 0;
+    const stockAlerts = products.filter(p => p.stockQuantity <= 5).length;
+
+    const cards = document.querySelectorAll('.glass-card h4.text-2xl');
+    if (cards.length >= 4) {
+        cards[0].innerText = recentOrders.length; // Total Orders (30D)
+        cards[1].innerText = `৳${totalRev.toLocaleString()}`; // Revenue (30D)
+        cards[2].innerText = `৳${Math.round(avgValue).toLocaleString()}`; // Avg Order Value
+        cards[3].innerText = stockAlerts; // Stock Alerts
+        
+        // অ্যালার্ট কালার পরিবর্তন
+        if (stockAlerts > 0) cards[3].classList.add('text-rose-500');
+        else cards[3].classList.remove('text-rose-500');
     }
 }
 
@@ -100,12 +124,47 @@ function updateStats(orders) {
     if (orderCountEl) orderCountEl.innerText = `${orders.length} Orders`;
 }
 
+// Top Products তালিকা রেন্ডার করা
+function renderTopProducts(orders, products) {
+    const container = document.querySelector('section.glass-card div.flex-col');
+    if (!container) return;
+
+    // প্রোডাক্ট অনুযায়ী বিক্রয় গণনা
+    const salesMap = {};
+    orders.forEach(order => {
+        order.items.forEach(item => {
+            salesMap[item.productId] = (salesMap[item.productId] || 0) + item.quantity;
+        });
+    });
+
+    const topItems = Object.entries(salesMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4);
+
+    if (topItems.length === 0) {
+        container.innerHTML = '<p class="text-[10px] font-bold text-slate-400">No sales data yet</p>';
+        return;
+    }
+
+    let html = '<div class="w-full space-y-3">';
+    topItems.forEach(([id, qty]) => {
+        const product = products.find(p => p._id === id) || { name: 'Unknown Product' };
+        html += `
+            <div class="flex justify-between items-center text-[11px] font-bold border-b border-slate-50 dark:border-slate-800 pb-2">
+                <span class="truncate pr-4">${product.name}</span>
+                <span class="text-blue-500">${qty} Sold</span>
+            </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    container.classList.remove('opacity-30');
+}
+
 function renderCharts(orders) {
     renderRevenueChart(orders);
     renderStatusChart(orders);
 }
 
-// ১. রেভিনিউ ট্রেন্ড চার্ট (Line Chart)
 function renderRevenueChart(orders) {
     const chartCanvas = document.getElementById('revenueChart');
     if (!chartCanvas) return;
@@ -141,7 +200,6 @@ function renderRevenueChart(orders) {
     });
 }
 
-// ২. অর্ডার স্ট্যাটাস চার্ট (Donut Chart)
 function renderStatusChart(orders) {
     const canvas = document.getElementById('orderStatusChart');
     if (!canvas) return;
@@ -152,7 +210,6 @@ function renderStatusChart(orders) {
     const completed = orders.filter(o => o.status === 'completed').length;
     const rejected = orders.filter(o => o.status === 'rejected').length;
 
-    // সেন্টারে টোটাল কাউন্ট আপডেট
     document.getElementById('total-orders-count').innerText = orders.length;
 
     statusChartInstance = new Chart(ctx, {
@@ -174,15 +231,10 @@ function renderStatusChart(orders) {
     });
 }
 
-// ডেইলি অপারেশন সেকশন অটো-আপডেট
 function updateOperations(orders) {
     const pendingCount = orders.filter(o => o.status === 'pending').length;
-    const operationsContainer = document.querySelector('.space-y-4'); // Daily operations container
-    
-    if (operationsContainer && pendingCount > 0) {
-        // নতুন পেন্ডিং অর্ডার থাকলে অপারেশন লিস্ট আপডেট করা
-        // এখানে আপনি আপনার প্রয়োজনমতো আরও লজিক যোগ করতে পারেন
-    }
+    const opMsg = document.querySelector('.operation-item p');
+    if (opMsg) opMsg.innerText = `Process ${pendingCount} pending orders`;
 }
 
 function handleAdminLogout() {
