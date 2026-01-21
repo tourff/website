@@ -1,187 +1,232 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Prime Products BD</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; }
+const BASE_URL = 'https://website-production-f869.up.railway.app';
+const ADMIN_PASS = "turjo0424";
+let revenueChartInstance = null;
+
+window.onload = () => {
+    const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+    const dateEl = document.getElementById('current-date');
+    if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
+
+    const auth = localStorage.getItem('adminAuth');
+    if (auth !== ADMIN_PASS) {
+        window.location.href = 'admin-login.html'; 
+    } else {
+        initDashboard();
+        initTheme(); 
+        initProductActions(); // প্রোডাক্ট বাটন লজিক শুরু করা
+    }
+};
+
+// --- প্রোডাক্ট ম্যানেজমেন্ট ফাংশনসমূহ ---
+
+function initProductActions() {
+    // কুইক এক্সেস বাটন ক্লিক করলে প্রোডাক্ট সেকশন দেখাবে
+    const productBtn = document.getElementById('quick-products');
+    if (productBtn) {
+        productBtn.onclick = () => {
+            const sec = document.getElementById('product-management');
+            sec.classList.remove('hidden');
+            window.scrollTo({ top: sec.offsetTop - 100, behavior: 'smooth' });
+            loadInventory();
+        };
+    }
+
+    // প্রোডাক্ট ফর্ম সাবমিট (Add/Edit)
+    const productForm = document.getElementById('product-form');
+    if (productForm) {
+        productForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const data = {
+                name: document.getElementById('p-name').value,
+                price: Number(document.getElementById('p-price').value),
+                image: document.getElementById('p-image').value,
+                description: document.getElementById('p-desc').value
+            };
+
+            const url = id ? `${BASE_URL}/admin/edit-product/${id}` : `${BASE_URL}/admin/add-product`;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    toggleAddModal();
+                    loadInventory();
+                }
+            } catch (err) {
+                console.error("Product save failed:", err);
+            }
+        };
+    }
+}
+
+// ইনভেন্টরি লোড করা
+async function loadInventory() {
+    try {
+        const res = await fetch(`${BASE_URL}/products`);
+        const products = await res.json();
+        const tbody = document.getElementById('product-list-body');
         
-        /* Light Mode Styles */
-        body { background-color: #f8fafc; color: #1e293b; }
-        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; transition: 0.3s; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .sidebar-item:hover, .sidebar-item.active { background: #f1f5f9; color: #2563eb; }
-        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: 0.3s; }
-        .badge-new { background: #22c55e; color: white; font-size: 8px; padding: 2px 6px; border-radius: 20px; font-weight: 800; margin-left: auto; }
-        .action-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border-radius: 20px; border: 1px solid #f1f5f9; cursor: pointer; transition: 0.3s; background: white; }
-        .action-card:hover { border-color: #3b82f6; background: #eff6ff; }
-
-        /* Dark Mode Global Styles */
-        .dark body { background-color: #0d0915 !important; color: #f8fafc !important; }
-        .dark aside { background-color: #161021 !important; border-color: rgba(255, 255, 255, 0.05) !important; }
-        .dark header { background-color: #161021 !important; border-color: rgba(255, 255, 255, 0.05) !important; }
-        .dark .glass-card { background: rgba(22, 16, 33, 0.7) !important; border-color: rgba(255, 255, 255, 0.05) !important; }
-        .dark .sidebar-item { color: #94a3b8; }
-        .dark .sidebar-item:hover, .dark .sidebar-item.active { background: #1e162e !important; color: #f43f5e !important; }
-        .dark .action-card { background: #1e162e !important; border-color: rgba(255, 255, 255, 0.05) !important; }
-        .dark .action-card:hover { border-color: #f43f5e !important; background: #2d2341 !important; }
-        .dark input, .dark textarea { background-color: #1e162e !important; color: white !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        .dark h2, .dark h3, .dark h4, .dark p:not(.text-slate-400) { color: white !important; }
-    </style>
-</head>
-<body class="flex min-h-screen">
-
-    <aside class="w-64 bg-white border-r border-slate-200 p-6 hidden lg:flex flex-col sticky top-0 h-screen overflow-y-auto">
-        <div class="mb-10 px-2 text-left">
-            <h1 class="font-extrabold text-lg tracking-tighter text-blue-600 dark:text-rose-500">Prime Products BD</h1>
-            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Admin Panel Dashboard</p>
-        </div>
-
-        <div class="space-y-6 text-left">
-            <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">MAIN</p>
-                <nav class="space-y-1">
-                    <div class="sidebar-item active"><i class="fas fa-th-large"></i> Dashboard</div>
-                    <div class="sidebar-item"><i class="fas fa-chart-pie"></i> Analytics</div>
-                    <div class="sidebar-item"><i class="fas fa-file-alt"></i> Reports</div>
-                    <div class="sidebar-item"><i class="fas fa-box"></i> Products</div>
-                </nav>
-            </div>
-            <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">HUBS</p>
-                <nav class="space-y-1">
-                    <div class="sidebar-item"><i class="fas fa-layer-group"></i> Operations Hub <span class="badge-new">NEW</span></div>
-                    <div class="sidebar-item"><i class="fas fa-briefcase"></i> Business Hub <span class="badge-new">NEW</span></div>
-                    <div class="sidebar-item"><i class="fas fa-bullhorn"></i> Marketing Hub <span class="badge-new">NEW</span></div>
-                </nav>
-            </div>
-            <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">SYSTEM</p>
-                <nav class="space-y-1">
-                    <div class="sidebar-item"><i class="fas fa-shield-virus text-teal-500"></i> Fraud Control <span class="badge-new">NEW</span></div>
-                    <div class="sidebar-item"><i class="fas fa-user-cog text-slate-500"></i> User Intelligence <span class="badge-new">NEW</span></div>
-                    <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </nav>
-            </div>
-        </div>
-    </aside>
-
-    <main class="flex-1 overflow-x-hidden">
-        <header class="bg-white border-b border-slate-200 p-6 sticky top-0 z-50 transition-all">
-            <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
-                <div class="text-left">
-                    <h2 class="text-3xl font-extrabold tracking-tight">Good Morning, Admin! <span class="text-slate-400">👋</span></h2>
-                    <p id="current-date" class="text-slate-500 text-xs font-medium mt-1"></p>
-                </div>
-                <div class="flex items-center gap-4 w-full lg:w-auto">
-                    <div class="relative flex-1 lg:min-w-[250px]">
-                        <input type="text" placeholder="Search orders, products..." class="w-full bg-slate-100 border-none rounded-xl py-2 px-10 text-xs focus:ring-2 focus:ring-blue-500 dark:bg-slate-800">
-                        <i class="fas fa-search absolute left-4 top-2.5 text-slate-400 text-xs"></i>
-                    </div>
-
-                    <button id="theme-toggle" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#1e162e] flex items-center justify-center transition-all hover:scale-110 shadow-sm">
-                        <i id="theme-icon" class="fas fa-moon text-slate-600 dark:text-yellow-400"></i>
-                    </button>
-
-                    <div class="flex items-center gap-3 border-l border-slate-200 pl-4 dark:border-slate-800">
-                        <div class="text-right">
-                            <p class="text-xs font-bold">Turjo</p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">Super Admin</p>
+        if (tbody) {
+            tbody.innerHTML = products.map(p => `
+                <tr class="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition">
+                    <td class="py-4 px-2">
+                        <div class="flex items-center gap-3">
+                            <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover">
+                            <span class="font-bold text-xs">${p.name}</span>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm">T</div>
-                    </div>
-                </div>
-            </div>
-        </header>
+                    </td>
+                    <td class="py-4 px-2 font-black text-xs text-blue-600 dark:text-rose-400">৳${p.price}</td>
+                    <td class="py-4 px-2 text-right space-x-2">
+                        <button onclick="editProduct('${p._id}')" class="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteProduct('${p._id}')" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (err) {
+        console.error("Inventory load failed:", err);
+    }
+}
 
-        <div class="p-8 lg:p-12 space-y-8">
-            <section class="glass-card p-8">
-                <h3 class="font-extrabold text-slate-800 mb-6 text-left flex items-center gap-2 dark:text-white"><i class="fas fa-bolt text-yellow-500"></i> Quick Actions</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div id="quick-products" class="action-card"><i class="fas fa-box text-orange-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Products</span></div>
-                    <div class="action-card"><i class="fas fa-shopping-cart text-blue-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Orders</span></div>
-                    <div class="action-card"><i class="fas fa-comments text-purple-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Chats</span></div>
-                    <div class="action-card"><i class="fas fa-chart-line text-green-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Analytics</span></div>
-                    <div class="action-card"><i class="fas fa-file-invoice text-slate-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Reports</span></div>
-                    <div class="action-card"><i class="fas fa-ticket-alt text-rose-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Coupons</span></div>
-                </div>
-            </section>
+// মোডাল কন্ট্রোল
+function toggleAddModal() {
+    const modal = document.getElementById('product-modal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+        document.getElementById('product-form').reset();
+        document.getElementById('edit-id').value = '';
+        document.getElementById('modal-title').innerText = "Add Product";
+    }
+}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card p-8 flex justify-between items-center text-left">
-                    <div>
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">TODAY REVENUE</p>
-                        <h4 id="today-income" class="text-3xl font-black">৳0</h4>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">৳</div>
-                </div>
-                <div class="glass-card p-8 flex justify-between items-center text-left">
-                    <div>
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">THIS MONTH ORDERS</p>
-                        <h4 id="month-orders" class="text-3xl font-black">0 orders</h4>
-                    </div>
-                    <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600"><i class="fas fa-arrow-trend-up"></i></div>
-                </div>
-            </div>
+// এডিট করার ডাটা ফেচ করা
+async function editProduct(id) {
+    try {
+        const res = await fetch(`${BASE_URL}/products`);
+        const products = await res.json();
+        const p = products.find(item => item._id === id);
+        
+        if (p) {
+            document.getElementById('edit-id').value = p._id;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-image').value = p.image;
+            document.getElementById('p-desc').value = p.description || '';
+            
+            document.getElementById('modal-title').innerText = "Edit Product";
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error("Edit fetch failed:", err);
+    }
+}
 
-            <section class="glass-card p-8 min-h-[400px]">
-                <h3 class="font-extrabold text-slate-800 mb-6 text-left dark:text-white">Analytics Overview</h3>
-                <div class="h-[300px]">
-                    <canvas id="revenueChart"></canvas>
-                </div>
-            </section>
+// প্রোডাক্ট ডিলিট
+async function deleteProduct(id) {
+    if(confirm("Are you sure? This product will be removed!")) {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/delete-product/${id}`, { method: 'DELETE' });
+            if (res.ok) loadInventory();
+        } catch (err) {
+            console.error("Delete failed:", err);
+        }
+    }
+}
 
-            <section id="product-management" class="glass-card p-8 mt-8 hidden">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="font-extrabold text-2xl tracking-tight">Product Inventory</h3>
-                    <button onclick="toggleAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition uppercase tracking-widest">
-                        <i class="fas fa-plus mr-2"></i> Add New Product
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b border-slate-100 dark:border-slate-800">
-                                <th class="py-4 px-2 text-[10px] font-black uppercase text-slate-400">Product</th>
-                                <th class="py-4 px-2 text-[10px] font-black uppercase text-slate-400">Price</th>
-                                <th class="py-4 px-2 text-[10px] font-black uppercase text-slate-400 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="product-list-body">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    </main>
+// --- আপনার আগের থিম ও ড্যাশবোর্ড লজিক ---
 
-    <div id="product-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-[#161021] w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 id="modal-title" class="text-2xl font-black mb-6 dark:text-white text-left">Add Product</h3>
-            <form id="product-form" class="space-y-4">
-                <input type="hidden" id="edit-id">
-                <input type="text" id="p-name" placeholder="Product Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent" required>
-                <input type="number" id="p-price" placeholder="Price (৳)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent" required>
-                <input type="text" id="p-image" placeholder="Image URL" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent" required>
-                <textarea id="p-desc" placeholder="Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent h-24"></textarea>
-                
-                <div class="flex gap-4 mt-6">
-                    <button type="button" onclick="toggleAddModal()" class="flex-1 py-4 text-xs font-bold uppercase text-slate-400 hover:text-slate-600 transition">Cancel</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-blue-500/30">Save Product</button>
-                </div>
-            </form>
-        </div>
-    </div>
+function initTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+    }
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+            refreshData(); 
+        });
+    }
+}
 
-    <script src="js/admin.js"></script>
-</body>
-</html>
+async function initDashboard() {
+    refreshData();
+    setInterval(refreshData, 30000); 
+}
+
+async function refreshData() {
+    try {
+        const response = await fetch(`${BASE_URL}/orders`);
+        const orders = await response.json();
+        updateStats(orders);
+        renderChart(orders);
+    } catch (err) {
+        console.error("Dashboard Sync Failed:", err);
+    }
+}
+
+function updateStats(orders) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0,0,0,0);
+    const todayOrders = orders.filter(o => new Date(o.orderedAt) >= startOfToday);
+    const todayRev = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const incomeEl = document.getElementById('today-income');
+    const orderCountEl = document.getElementById('month-orders');
+    if (incomeEl) incomeEl.innerText = `৳${todayRev.toLocaleString()}`;
+    if (orderCountEl) orderCountEl.innerText = `${orders.length} orders`;
+}
+
+function renderChart(orders) {
+    const chartCanvas = document.getElementById('revenueChart');
+    if (!chartCanvas) return;
+    const ctx = chartCanvas.getContext('2d');
+    if (revenueChartInstance) revenueChartInstance.destroy();
+    const last7Orders = orders.slice(-7); 
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    
+    revenueChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: last7Orders.map(o => new Date(o.orderedAt).toLocaleDateString()),
+            datasets: [{ 
+                label: 'Revenue Growth',
+                data: last7Orders.map(o => o.totalAmount), 
+                borderColor: isDark ? '#f43f5e' : '#2563eb',
+                backgroundColor: isDark ? 'rgba(244, 63, 94, 0.1)' : 'rgba(37, 99, 235, 0.1)',
+                tension: 0.4, 
+                fill: true 
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                x: { grid: { display: false }, ticks: { color: textColor } }
+            }
+        }
+    });
+}
+
+function handleAdminLogout() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('adminAuth'); 
+        window.location.href = 'admin-login.html'; 
+    }
+}
