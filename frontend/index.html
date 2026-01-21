@@ -67,7 +67,7 @@
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
                     <i class="fas fa-bolt text-black text-xl"></i>
                 </div>
-                <div class="hidden md:block text-left">
+                <div class="hidden md:block">
                     <h1 class="font-bold text-lg leading-tight uppercase tracking-tighter">Turjo Site</h1>
                     <p class="text-[9px] text-gray-500 uppercase tracking-widest">Premium Store</p>
                 </div>
@@ -80,38 +80,27 @@
             </div>
 
             <div class="flex items-center gap-4 text-xs font-semibold">
-                <a href="#" class="hidden lg:flex items-center gap-2 hover:text-rose-500 transition">
-                    <i class="fas fa-headset"></i> Support
-                </a>
-                
+                <a href="#" class="hidden lg:flex items-center gap-2 hover:text-rose-500 transition"><i class="fas fa-headset"></i> Support</a>
                 <button onclick="toggleCart()" class="cart-btn px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-lg shadow-pink-500/20 text-white transition active:scale-95">
                     <i class="fas fa-shopping-cart"></i> <span id="cart-count-btn">৳0</span>
                 </button>
 
-                <div id="auth-nav" class="border-l border-white/10 pl-4 relative">
+                <div id="auth-nav" class="border-l border-white/10 pl-4 relative text-left">
                     <div id="guest-ui">
-                        <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition text-[11px] uppercase tracking-widest">
-                            <i class="far fa-user text-lg text-rose-500"></i> Login
-                        </a>
+                        <a href="login.html" class="flex items-center gap-2 hover:text-rose-500 transition text-[11px] uppercase tracking-widest"><i class="far fa-user text-lg text-rose-500"></i> Login</a>
                     </div>
-
                     <div id="user-ui" class="hidden relative">
                         <button onclick="toggleProfileMenu()" class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition">
-                            <div class="w-6 h-6 bg-gradient-to-br from-rose-500 to-pink-600 rounded-md flex items-center justify-center text-[10px]">
-                                <i class="fas fa-user"></i>
-                            </div>
+                            <div class="w-6 h-6 bg-gradient-to-br from-rose-500 to-pink-600 rounded-md flex items-center justify-center text-[10px]"><i class="fas fa-user"></i></div>
                             <span id="display-user-name" class="max-w-[70px] truncate text-[11px]">User</span>
                             <i class="fas fa-chevron-down text-[8px] text-gray-500"></i>
                         </button>
-
-                        <div id="profile-dropdown" class="profile-dropdown text-left">
+                        <div id="profile-dropdown" class="profile-dropdown">
                             <div class="px-3 py-2 border-b border-white/5 mb-2">
                                 <p class="text-[8px] text-gray-500 uppercase font-bold tracking-widest">Account Info</p>
                                 <p id="user-email-text" class="text-[10px] truncate text-rose-400 font-medium">user@mail.com</p>
                             </div>
-                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition flex items-center gap-2 text-[11px] font-bold uppercase">
-                                <i class="fas fa-sign-out-alt"></i> LOGOUT
-                            </button>
+                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition flex items-center gap-2 text-[11px] font-bold uppercase"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
                         </div>
                     </div>
                 </div>
@@ -128,7 +117,7 @@
     </div>
 
     <main class="container mx-auto px-4 py-12">
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4 text-left">
             <div>
                 <h2 class="text-3xl font-black uppercase tracking-tighter">Premium Collection</h2>
                 <div class="flex items-center gap-2 mt-1">
@@ -153,8 +142,26 @@
     </div>
 
     <footer class="bg-[#0b0712] border-t border-white/5 pt-20 pb-10 mt-10">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-[9px] text-gray-600 uppercase tracking-[0.3em]">© 2026 Products Hub BD. All rights reserved.</p>
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16 text-left">
+                <div class="space-y-6">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-white rounded flex items-center justify-center"><i class="fas fa-bolt text-black text-lg"></i></div>
+                        <h2 class="text-xl font-black uppercase tracking-tighter">Products Hub BD</h2>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed max-w-xs">Bangladesh's most trusted marketplace for verified digital products and international subscriptions.</p>
+                    <div class="space-y-3 text-[11px] font-bold uppercase tracking-widest text-gray-400">
+                        <p class="flex items-center gap-3"><i class="fab fa-whatsapp text-green-500 text-sm"></i> WhatsApp Support</p>
+                        <p class="flex items-center gap-3"><i class="fas fa-map-marker-alt text-rose-500 text-sm"></i> Dhaka, Bangladesh</p>
+                    </div>
+                </div>
+                <div><h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-8">Shop</h4><ul class="space-y-4 text-xs font-bold"><li><a href="#" class="hover:text-rose-500 transition">All Products</a></li><li><a href="#" class="hover:text-rose-500 transition">AI Tools</a></li></ul></div>
+                <div><h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-8">Support</h4><ul class="space-y-4 text-xs font-bold"><li><a href="#" class="hover:text-rose-500 transition">Contact Us</a></li><li><a href="#" class="hover:text-rose-500 transition">Help Center</a></li></ul></div>
+                <div><h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-8">Legal</h4><ul class="space-y-4 text-xs font-bold"><li><a href="#" class="hover:text-rose-500 transition">Privacy Policy</a></li><li><a href="#" class="hover:text-rose-500 transition">Terms</a></li></ul></div>
+            </div>
+            <div class="text-center mt-12 border-t border-white/5 pt-10">
+                <p class="text-[9px] text-gray-600 uppercase tracking-[0.3em]">© 2026 Products Hub BD. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -175,17 +182,8 @@
                 userUI.classList.add('hidden');
             }
         }
-        function handleLogout() {
-            if(confirm("Logout from your account?")) {
-                localStorage.clear();
-                window.location.reload();
-            }
-        }
-        window.addEventListener('click', function(e) {
-            if (document.getElementById('user-ui') && !document.getElementById('user-ui').contains(e.target)) {
-                if(document.getElementById('profile-dropdown')) document.getElementById('profile-dropdown').classList.remove('active');
-            }
-        });
+        function handleLogout() { if(confirm("Logout from your account?")) { localStorage.clear(); window.location.reload(); } }
+        window.addEventListener('click', function(e) { if (document.getElementById('user-ui') && !document.getElementById('user-ui').contains(e.target)) { if(document.getElementById('profile-dropdown')) document.getElementById('profile-dropdown').classList.remove('active'); } });
         document.addEventListener('DOMContentLoaded', checkLoginStatus);
     </script>
     <script src="js/main.js"></script>
