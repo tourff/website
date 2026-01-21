@@ -3,20 +3,16 @@ const ADMIN_PASS = "turjo0424";
 let revenueChartInstance = null;
 
 window.onload = () => {
-    // তারিখ সেট করার লজিক
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    // ১. সিকিউরিটি চেক: sessionStorage থেকে ডাটা চেক করা
     const auth = sessionStorage.getItem('adminAuth'); 
     
     if (auth !== ADMIN_PASS) {
-        // পাসওয়ার্ড না থাকলে লগইন পেজে পাঠিয়ে দিবে
         window.location.href = 'admin-login.html'; 
     } else {
-        // হাই-সিকিউরিটি আপডেট: ড্যাশবোর্ডে ঢোকার সাথে সাথে সেশন থেকে পাসওয়ার্ড মুছে ফেলা হচ্ছে
-        // ফলে রিফ্রেশ দিলেই ব্রাউজার আর পাসওয়ার্ড খুঁজে পাবে না এবং পুনরায় লগইন চাইবে
+        // রিফ্রেশ প্রোটেকশন: ড্যাশবোর্ড লোড হওয়ার সাথে সাথে সেশন ক্লিয়ার করা
         sessionStorage.removeItem('adminAuth'); 
 
         initDashboard();
@@ -25,16 +21,30 @@ window.onload = () => {
     }
 };
 
-// ২. নেভিগেশন লজিক
+// ২. নেভিগেশন লজিক: স্লাইডার পেজ যুক্ত করা হয়েছে
 function initNavigation() {
     const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
     if (prodCard) prodCard.onclick = () => window.location.href = 'admin-products.html';
 
     const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
     if (orderCard) orderCard.onclick = () => window.location.href = 'admin-orders.html';
+
+    // Chats আইকনকে Slider ম্যানেজমেন্ট পেজে রূপান্তর
+    const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement;
+    if (sliderCard) {
+        // আইকন এবং টেক্সট পরিবর্তন করে স্লাইডার পেজের সাথে কানেক্ট করা
+        sliderCard.innerHTML = `
+            <i class="fas fa-images text-purple-500 text-xl"></i>
+            <span class="text-[10px] font-bold uppercase">Slider</span>
+        `;
+        sliderCard.onclick = () => {
+            // স্লাইডার পেজে যাওয়ার আগে সেশন আবার সেট করা হচ্ছে যাতে ওই পেজ আপনাকে রিজেক্ট না করে
+            sessionStorage.setItem('adminAuth', ADMIN_PASS);
+            window.location.href = 'admin-slider.html';
+        };
+    }
 }
 
-// ৩. থিম লজিক
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
