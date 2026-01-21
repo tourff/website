@@ -30,7 +30,6 @@ const Product = mongoose.model('Product', new mongoose.Schema({
     category: String
 }));
 
-// স্লাইডার/ব্যানার মডেল (এটিতে link এবং duration যুক্ত করা হয়েছে)
 const Banner = mongoose.model('Banner', new mongoose.Schema({
     imageUrl: { type: String, required: true },
     link: { type: String, default: "" },
@@ -55,7 +54,6 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- রুটসমূহ ---
 
-// ১. ড্যাশবোর্ডের মূল অ্যানালিটিক্স
 app.get('/admin/analytics', async (req, res) => {
     try {
         const totalProducts = await Product.countDocuments();
@@ -79,7 +77,6 @@ app.get('/admin/analytics', async (req, res) => {
     }
 });
 
-// ২. গ্রাফ ডাটা রুট
 app.get('/admin/chart-data', async (req, res) => {
     try {
         const orders = await Order.find().sort({ orderedAt: 1 }).limit(10);
@@ -89,7 +86,6 @@ app.get('/admin/chart-data', async (req, res) => {
     }
 });
 
-// ৩. সব অর্ডার ফেচ করা
 app.get('/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ orderedAt: -1 });
@@ -99,7 +95,6 @@ app.get('/orders', async (req, res) => {
     }
 });
 
-// ৪. অর্ডার স্ট্যাটাস আপডেট
 app.patch('/admin/update-order/:id', async (req, res) => {
     try {
         const { status } = req.body;
@@ -110,7 +105,6 @@ app.patch('/admin/update-order/:id', async (req, res) => {
     }
 });
 
-// ৫. অর্ডার ডিলিট
 app.delete('/admin/delete-order/:id', async (req, res) => {
     try {
         await Order.findByIdAndDelete(req.params.id);
@@ -120,7 +114,6 @@ app.delete('/admin/delete-order/:id', async (req, res) => {
     }
 });
 
-// ৬. অথেনটিকেশন রুটসমূহ
 app.post('/auth/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -147,7 +140,6 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
-// ৭. প্রোডাক্ট রুটসমূহ
 app.get('/products', async (req, res) => {
     const products = await Product.find();
     res.json(products);
@@ -159,7 +151,6 @@ app.post('/admin/add-product', async (req, res) => {
     res.status(201).json(product);
 });
 
-// প্রোডাক্ট আপডেট রুট
 app.put('/admin/edit-product/:id', async (req, res) => {
     try {
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -174,9 +165,9 @@ app.delete('/admin/delete-product/:id', async (req, res) => {
     res.json({ message: "Product deleted" });
 });
 
-// ৮. স্লাইডার/ব্যানার রুটসমূহ (সংশোধিত)
+// --- স্লাইডার/ব্যানার রুটসমূহ ---
 
-// ফ্রন্টএন্ডে লোড করার জন্য GET রুট
+// অ্যাডমিন প্যানেলের জন্য (/sliders)
 app.get('/sliders', async (req, res) => {
     try {
         const banners = await Banner.find();
@@ -186,7 +177,16 @@ app.get('/sliders', async (req, res) => {
     }
 });
 
-// নতুন স্লাইডার অ্যাড করা
+// মেইন ওয়েবসাইটের জন্য (/banners) - এটি ৪0৪ এরর দূর করবে
+app.get('/banners', async (req, res) => {
+    try {
+        const banners = await Banner.find();
+        res.json(banners);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch banners" });
+    }
+});
+
 app.post('/admin/add-slider', async (req, res) => {
     try {
         const banner = new Banner(req.body);
@@ -197,7 +197,6 @@ app.post('/admin/add-slider', async (req, res) => {
     }
 });
 
-// স্লাইডার আপডেট করা
 app.put('/admin/edit-slider/:id', async (req, res) => {
     try {
         const updatedSlider = await Banner.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -207,7 +206,6 @@ app.put('/admin/edit-slider/:id', async (req, res) => {
     }
 });
 
-// স্লাইডার ডিলিট করা
 app.delete('/admin/delete-slider/:id', async (req, res) => {
     try {
         await Banner.findByIdAndDelete(req.params.id);
