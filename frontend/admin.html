@@ -34,7 +34,7 @@
         .dark .sidebar-item:hover, .dark .sidebar-item.active { background: #1e162e !important; color: #f43f5e !important; }
         .dark .action-card { background: #1e162e !important; border-color: rgba(255, 255, 255, 0.05) !important; }
         .dark .action-card:hover { border-color: #f43f5e !important; background: #2d2341 !important; }
-        .dark input { background-color: #1e162e !important; color: white !important; }
+        .dark input, .dark textarea { background-color: #1e162e !important; color: white !important; border-color: rgba(255, 255, 255, 0.1) !important; }
         .dark h2, .dark h3, .dark h4, .dark p:not(.text-slate-400) { color: white !important; }
     </style>
 </head>
@@ -107,7 +107,7 @@
             <section class="glass-card p-8">
                 <h3 class="font-extrabold text-slate-800 mb-6 text-left flex items-center gap-2 dark:text-white"><i class="fas fa-bolt text-yellow-500"></i> Quick Actions</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div class="action-card"><i class="fas fa-box text-orange-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Products</span></div>
+                    <div id="quick-products" class="action-card"><i class="fas fa-box text-orange-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Products</span></div>
                     <div class="action-card"><i class="fas fa-shopping-cart text-blue-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Orders</span></div>
                     <div class="action-card"><i class="fas fa-comments text-purple-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Chats</span></div>
                     <div class="action-card"><i class="fas fa-chart-line text-green-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Analytics</span></div>
@@ -139,8 +139,48 @@
                     <canvas id="revenueChart"></canvas>
                 </div>
             </section>
+
+            <section id="product-management" class="glass-card p-8 mt-8 hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="font-extrabold text-2xl tracking-tight">Product Inventory</h3>
+                    <button onclick="toggleAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition uppercase tracking-widest">
+                        <i class="fas fa-plus mr-2"></i> Add New Product
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-slate-100 dark:border-slate-800">
+                                <th class="py-4 px-2 text-[10px] font-black uppercase text-slate-400">Product</th>
+                                <th class="py-4 px-2 text-[10px] font-black uppercase text-slate-400">Price</th>
+                                <th class="py-4 px-2 text-[10px] font-black uppercase text-slate-400 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </main>
+
+    <div id="product-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#161021] w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
+            <h3 id="modal-title" class="text-2xl font-black mb-6 dark:text-white text-left">Add Product</h3>
+            <form id="product-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <input type="text" id="p-name" placeholder="Product Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent" required>
+                <input type="number" id="p-price" placeholder="Price (৳)" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent" required>
+                <input type="text" id="p-image" placeholder="Image URL" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent" required>
+                <textarea id="p-desc" placeholder="Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm dark:text-white border border-transparent h-24"></textarea>
+                
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="toggleAddModal()" class="flex-1 py-4 text-xs font-bold uppercase text-slate-400 hover:text-slate-600 transition">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-blue-500/30">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="js/admin.js"></script>
 </body>
