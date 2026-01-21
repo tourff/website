@@ -3,46 +3,53 @@ const ADMIN_PASS = "turjo0424";
 let revenueChartInstance = null;
 
 window.onload = () => {
+    // ১. ডেট সেট করা
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
-    const auth = localStorage.getItem('adminAuth');
+    // ২. সিকিউরিটি চেক: sessionStorage ব্যবহার করা হয়েছে যাতে ব্রাউজার বন্ধ করলে লগআউট হয়
+    const auth = sessionStorage.getItem('adminAuth'); 
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
     } else {
         initDashboard();
         initTheme(); 
-        initNavigation(); // Nav logic add kora hoyeche
+        initNavigation(); 
     }
 };
 
-// Quick Action Cards er link set kora
+// ৩. নেভিগেশন ঠিক করা
 function initNavigation() {
-    // Product Card
     const prodCard = document.querySelector('.action-card i.fa-box')?.parentElement;
     if (prodCard) prodCard.onclick = () => window.location.href = 'admin-products.html';
 
-    // Order Card
     const orderCard = document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
     if (orderCard) orderCard.onclick = () => window.location.href = 'admin-orders.html';
 }
 
+// ৪. থিম টগল (ডার্ক/লাইট মোড)
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
+    
+    // আগের সেভ করা থিম লোড (এটি localStorage এ থাকবে কারণ এটি সিকিউরিটি ইস্যু না)
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
         if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
     }
+
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
             if (themeIcon) {
-                if(document.documentElement.classList.contains('dark')) themeIcon.classList.replace('fa-moon', 'fa-sun');
+                if(isDark) themeIcon.classList.replace('fa-moon', 'fa-sun');
                 else themeIcon.classList.replace('fa-sun', 'fa-moon');
             }
+            // থিম বদলালে গ্রাফের কালার আপডেট করতে রি-রেন্ডার
             refreshData(); 
         });
     }
@@ -55,7 +62,6 @@ async function initDashboard() {
 
 async function refreshData() {
     try {
-        // Products ebong Orders eksathe fetch kora
         const [pRes, oRes] = await Promise.all([
             fetch(`${BASE_URL}/products`),
             fetch(`${BASE_URL}/orders`)
@@ -66,14 +72,13 @@ async function refreshData() {
         
         updateStats(orders);
         renderChart(orders);
-        checkStockStatus(products); // Stock Alert check kora
+        checkStockStatus(products); 
         
     } catch (err) {
         console.error("Dashboard Sync Failed:", err);
     }
 }
 
-// Stock Alert Logic
 function checkStockStatus(products) {
     const outOfStockItems = products.filter(p => p.stockQuantity <= 0);
     const alertBox = document.getElementById('stock-alert-container');
@@ -138,7 +143,7 @@ function renderChart(orders) {
 
 function handleAdminLogout() {
     if(confirm("Are you sure?")) {
-        localStorage.removeItem('adminAuth'); 
+        sessionStorage.removeItem('adminAuth'); //
         window.location.href = 'admin-login.html'; 
     }
 }
