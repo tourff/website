@@ -53,31 +53,57 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- রুটসমূহ ---
 
-// ১. এডমিন প্যানেলের জন্য সব অর্ডার ফেচ করা (Sorting যুক্ত করা হয়েছে)
+// ১. ড্যাশবোর্ডের মূল অ্যানালিটিক্স (ভিডিওর মতো কার্ডগুলোর জন্য)
+app.get('/admin/analytics', async (req, res) => {
+    try {
+        const totalProducts = await Product.countDocuments();
+        const totalUsers = await User.countDocuments();
+        const orders = await Order.find();
+        
+        // আয়ের হিসাব (Revenue)
+        const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        
+        // আজকের আয়ের হিসাব (ফিল্টারিং)
+        const startOfToday = new Date();
+        startOfToday.setHours(0,0,0,0);
+        const todayOrders = await Order.find({ orderedAt: { $gte: startOfToday } });
+        const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+        res.json({ 
+            totalProducts, 
+            totalUsers, 
+            totalRevenue, 
+            todayRevenue,
+            totalOrders: orders.length 
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Analytics fetch failed!" });
+    }
+});
+
+// ২. গ্রাফ ডাটা রুট (অ্যাডমিন প্যানেলের গ্রাফের জন্য গত ৭ দিনের ডাটা)
+app.get('/admin/chart-data', async (req, res) => {
+    try {
+        const orders = await Order.find()
+            .sort({ orderedAt: 1 })
+            .limit(10); // শেষ ১০টি অর্ডারের ডাটা পাঠাবে গ্রাফের জন্য
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: "Chart data failed!" });
+    }
+});
+
+// ৩. সব অর্ডার ফেচ করা (নতুনগুলো উপরে)
 app.get('/orders', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ orderedAt: -1 }); // নতুন অর্ডার সবার উপরে
+        const orders = await Order.find().sort({ orderedAt: -1 });
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "Orders fetch failed!" });
     }
 });
 
-// ২. ড্যাশবোর্ড অ্যানালিটিক্স ডাটা (এডমিন ভিডিওর মতো চার্ট দেখানোর জন্য)
-app.get('/admin/analytics', async (req, res) => {
-    try {
-        const totalProducts = await Product.countDocuments();
-        const totalUsers = await User.countDocuments();
-        const orders = await Order.find();
-        const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-        
-        res.json({ totalProducts, totalUsers, totalRevenue, totalOrders: orders.length });
-    } catch (err) {
-        res.status(500).json({ message: "Analytics fetch failed!" });
-    }
-});
-
-// ৩. অর্ডার স্ট্যাটাস আপডেট করার রুট (যেমন: Pending থেকে Success করা)
+// ৪. অর্ডার স্ট্যাটাস আপডেট
 app.patch('/admin/update-order/:id', async (req, res) => {
     try {
         const { status } = req.body;
@@ -88,35 +114,13 @@ app.patch('/admin/update-order/:id', async (req, res) => {
     }
 });
 
-// ৪. অর্ডার ডিলিট করার রুট
+// ৫. অর্ডার ডিলিট
 app.delete('/admin/delete-order/:id', async (req, res) => {
     try {
         await Order.findByIdAndDelete(req.params.id);
         res.json({ message: "Order deleted successfully!" });
     } catch (err) {
         res.status(500).json({ message: "Delete failed!" });
-    }
-});
-
-// ৫. কাস্টমার সংখ্যা দেখার রুট
-app.get('/users/count', async (req, res) => {
-    try {
-        const count = await User.countDocuments();
-        res.json({ count });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// অর্ডার প্লেস করার রুট (কাস্টমার সাইড)
-app.post('/admin/place-order', async (req, res) => {
-    try {
-        const { userName, userEmail, products, totalAmount } = req.body;
-        const newOrder = new Order({ userName, userEmail, products, totalAmount });
-        await newOrder.save();
-        res.status(201).json({ message: "Order placed successfully!", orderId: newOrder._id });
-    } catch (err) {
-        res.status(500).json({ message: "Order failed!" });
     }
 });
 
@@ -159,15 +163,6 @@ app.post('/admin/add-product', async (req, res) => {
     res.status(201).json(product);
 });
 
-app.put('/admin/edit-product/:id', async (req, res) => {
-    try {
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedProduct);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
 app.delete('/admin/delete-product/:id', async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ message: "Product deleted" });
@@ -185,4 +180,4 @@ app.post('/admin/add-banner', async (req, res) => {
     res.status(201).json(banner);
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on port ${PORT}`))
