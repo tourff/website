@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Prime Products BD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0d0915; overflow: hidden; }
+        .login-card { background: rgba(22, 16, 33, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .gradient-btn { background: linear-gradient(90deg, #9333ea, #db2777); transition: 0.3s; }
+        .gradient-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(219, 39, 119, 0.3); }
+        .input-box { background: #1e162e; border: 1px solid #2d2341; color: white; transition: 0.3s; outline: none; }
+        .input-box:focus { border-color: #f43f5e; box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+    <div class="fixed top-[-10%] right-[-10%] w-[350px] h-[350px] bg-purple-600/20 rounded-full blur-[100px]"></div>
+    <div class="fixed bottom-[-10%] left-[-10%] w-[350px] h-[350px] bg-rose-600/20 rounded-full blur-[100px]"></div>
+
+    <div class="w-full max-w-[400px] z-10">
+        <div class="login-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl text-center">
+            <div class="mb-8">
+                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <i class="fas fa-user-shield text-2xl text-black"></i>
+                </div>
+                <h1 class="text-xl font-extrabold text-white tracking-tighter uppercase">Admin Portal</h1>
+                <p class="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">Prime Products BD</p>
+            </div>
+
+            <form id="adminLoginForm" class="space-y-6 text-left">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Master Password</label>
+                    <div class="relative mt-2">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                        <input type="password" id="adminPassInput" required placeholder="••••••••" 
+                            class="w-full input-box py-3.5 pl-11 pr-4 rounded-xl text-sm">
+                    </div>
+                </div>
+                <button type="submit" class="w-full gradient-btn py-4 rounded-xl text-white font-bold text-[10px] uppercase tracking-[0.2em]">
+                    Authorize Access
+                </button>
+                <p id="errorMsg" class="text-rose-500 text-[10px] text-center font-bold uppercase hidden mt-4">Access Denied: Wrong Password</p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASS = "turjo0424";
+        document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('adminPassInput').value;
+            if (input === ADMIN_PASS) {
+                localStorage.setItem('adminAuth', ADMIN_PASS);
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('errorMsg').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
