@@ -3,151 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management | Prime Products BD</title>
+    <title>Admin Dashboard | Prime Products BD</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; overflow-x: hidden; }
         
-        /* Permanent Sidebar Smooth Transition */
+        /* ১. উন্নত সাইডবার ট্রানজিশন লজিক */
         #main-sidebar {
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
         }
 
         #main-sidebar.minimized {
-            width: 85px;
+            width: 80px;
             padding: 24px 12px;
         }
 
-        #main-sidebar.minimized .sidebar-logo,
-        #main-sidebar.minimized nav span,
-        #main-sidebar.minimized .badge-new,
-        #main-sidebar.minimized .menu-label {
+        /* মিনিমাইজ অবস্থায় টেক্সট হাইড করা */
+        #main-sidebar.minimized span, 
+        #main-sidebar.minimized .menu-label,
+        #main-sidebar.minimized .sidebar-logo h1,
+        #main-sidebar.minimized .badge-new {
             display: none;
         }
 
         #main-sidebar.minimized .sidebar-item {
             justify-content: center;
             padding: 12px 0;
+            width: 100%;
         }
 
-        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; transition: 0.3s; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .sidebar-item:hover, .sidebar-item.active { background: #f1f5f9; color: #2563eb; }
+        /* সাইডবার আইটেম ডিজাইন */
+        .sidebar-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 12px 16px; 
+            border-radius: 14px; 
+            transition: 0.3s; 
+            color: #64748b; 
+            font-size: 13px; 
+            font-weight: 600; 
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
 
-        .dark body { background-color: #0d0915; color: white; }
-        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: 0.3s; }
-        .dark .glass-card { background: rgba(22, 16, 33, 0.7); border-color: rgba(255, 255, 255, 0.05); }
-        .dark .sidebar-item { color: #94a3b8; }
-        .dark .sidebar-item:hover, .dark .sidebar-item.active { background: #1e162e !important; color: #f43f5e !important; }
-        .badge-new { background: #22c55e; color: white; font-size: 8px; padding: 2px 6px; border-radius: 20px; font-weight: 800; margin-left: auto; }
+        .sidebar-item:hover {
+            background: #f1f5f9;
+            color: #2563eb;
+        }
+
+        .sidebar-item.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+        }
+
+        .menu-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 20px 0 10px 15px;
+        }
+
+        .badge-new {
+            background: #10b981;
+            color: white;
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        /* ডার্ক মোড সাপোর্ট */
+        .dark body { background-color: #0f172a; color: #f8fafc; }
+        .dark aside { background-color: #1e293b; border-color: rgba(255,255,255,0.05); }
+        .dark header { background-color: #1e293b; border-color: rgba(255,255,255,0.05); }
+        .dark .sidebar-item:hover { background: #334155; color: #60a5fa; }
+        .dark .sidebar-item.active { background: #3b82f6; color: white; }
     </style>
 </head>
 <body class="flex min-h-screen transition-all">
 
-    <aside id="main-sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col sticky top-0 h-screen overflow-y-auto z-[60] dark:bg-[#161021]">
-        <div class="flex items-center justify-between mb-10 px-2 sidebar-header">
-            <div class="sidebar-logo text-left">
-                <h1 class="font-extrabold text-lg tracking-tighter text-blue-600 dark:text-rose-500 uppercase">PHB Admin</h1>
+    <aside id="main-sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col sticky top-0 h-screen overflow-y-auto z-[60]">
+        
+        <div class="flex items-center justify-between mb-8 px-2">
+            <div class="sidebar-logo flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cube text-white text-sm"></i>
+                </div>
+                <h1 class="font-black text-lg tracking-tight text-slate-800 dark:text-white uppercase">PHB Admin</h1>
             </div>
-            <button id="sidebar-toggle" class="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <i id="toggle-icon" class="fas fa-chevron-left text-slate-400 text-xs"></i>
+            <button id="sidebar-toggle" class="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 transition">
+                <i id="toggle-icon" class="fas fa-bars text-slate-400 text-xs"></i>
             </button>
         </div>
 
-        <div class="space-y-6 text-left">
-            <nav class="space-y-1">
-                <div class="sidebar-item" onclick="navigate('admin.html')"><i class="fas fa-th-large"></i> <span>Dashboard</span></div>
-                <div class="sidebar-item active"><i class="fas fa-box"></i> <span>Products</span></div>
-                <div class="sidebar-item" onclick="navigate('admin-orders.html')"><i class="fas fa-shopping-cart"></i> <span>Orders</span></div>
-                <div id="side-intelligence" class="sidebar-item" onclick="navigate('admin-intelligence.html')"><i class="fas fa-user-cog"></i> <span>User Intelligence</span></div>
-                <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
-            </nav>
+        <div class="flex-1 overflow-y-auto text-left">
+            <p class="menu-label">Analytics</p>
+            <div class="sidebar-item active">
+                <i class="fas fa-th-large"></i> <span>Dashboard</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i> <span>Real-time Pulse</span>
+                <span class="badge-new">LIVE</span>
+            </div>
+
+            <p class="menu-label">Management</p>
+            <div class="sidebar-item">
+                <i class="fas fa-box"></i> <span>Inventory</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-shopping-cart"></i> <span>Orders</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-users"></i> <span>Customers</span>
+            </div>
+
+            <p class="menu-label">Security</p>
+            <div class="sidebar-item">
+                <i class="fas fa-shield-halved"></i> <span>Fraud Control</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-brain"></i> <span>User Intelligence</span>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800">
+            <div onclick="handleAdminLogout()" class="sidebar-item text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                <i class="fas fa-power-off"></i> <span>Sign Out</span>
+            </div>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-x-hidden p-8 lg:p-12">
-        <header class="flex justify-between items-center mb-10 text-left">
-            <div>
-                <p class="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">Stock & Inventory</p>
-                <h1 class="text-3xl font-black text-left">Product Inventory</h1>
+    <main class="flex-1 transition-all">
+        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 p-6 sticky top-0 z-50 dark:bg-slate-900/80">
+            <div class="flex justify-between items-center">
+                <div class="text-left">
+                    <h2 class="text-2xl font-black text-slate-800 dark:text-white">Dashboard Overview</h2>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Prime Products BD System</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="theme-toggle" class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-slate-700">
+                        <i id="theme-icon" class="fas fa-moon text-slate-600 dark:text-yellow-400"></i>
+                    </button>
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold">A</div>
+                </div>
             </div>
-            <button onclick="toggleModal()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-blue-500/30">
-                <i class="fas fa-plus mr-2"></i> Add Product
-            </button>
         </header>
 
-        <section class="glass-card p-8">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b dark:border-slate-800">
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-left">Product Details</th>
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-left">Pricing</th>
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-left">Stock Status</th>
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-list"></tbody>
-                </table>
+        <div class="p-8">
+            <div class="glass-card p-12 text-center border-dashed border-2 border-slate-200 dark:border-slate-800">
+                <i class="fas fa-folder-open text-slate-300 text-5xl mb-4"></i>
+                <h1 class="text-xl font-bold text-slate-400 uppercase tracking-widest">Dashboard Content Area</h1>
             </div>
-        </section>
+        </div>
     </main>
 
-    <div id="p-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-[#161021] w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 id="modal-title" class="text-2xl font-black mb-6 text-left">Product Details</h3>
-            <form id="inventory-form" class="space-y-4 text-left">
-                <input type="hidden" id="edit-id">
-                <input type="text" id="p-name" placeholder="Product Name" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm" required>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="p-price" placeholder="Sale Price (৳)" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm" required>
-                    <input type="number" id="p-oldPrice" placeholder="Old Price (৳)" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm">
-                </div>
-                <input type="number" id="p-stock" placeholder="Stock Quantity" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm" required>
-                <input type="text" id="p-image" placeholder="Image URL" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm" required>
-                <textarea id="p-desc" placeholder="Product Description" class="w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-xl outline-none text-sm h-24"></textarea>
-                <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="toggleModal()" class="flex-1 font-bold text-xs text-slate-400 uppercase">Cancel</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Save Product</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
+        // সাইডবার টগল স্ক্রিপ্ট
         const sidebar = document.getElementById('main-sidebar');
         const toggleBtn = document.getElementById('sidebar-toggle');
         const toggleIcon = document.getElementById('toggle-icon');
 
-        if (localStorage.getItem('sidebar-minimized') === 'true') {
-            sidebar.classList.add('minimized');
-            toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
-        }
-
         toggleBtn.onclick = () => {
             sidebar.classList.toggle('minimized');
             const isMinimized = sidebar.classList.contains('minimized');
-            if (isMinimized) toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
-            else toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+            
+            // আইকন পরিবর্তন
+            if (isMinimized) {
+                toggleIcon.className = 'fas fa-indent text-slate-400 text-xs';
+            } else {
+                toggleIcon.className = 'fas fa-bars text-slate-400 text-xs';
+            }
             localStorage.setItem('sidebar-minimized', isMinimized);
         };
 
-        function navigate(page) {
-            sessionStorage.setItem('adminAuth', "turjo0424");
-            window.location.href = page;
-        }
-
-        function handleAdminLogout() {
-            if(confirm("Are you sure?")) {
-                sessionStorage.removeItem('adminAuth'); 
-                window.location.href = 'admin-login.html'; 
-            }
+        if (localStorage.getItem('sidebar-minimized') === 'true') {
+            sidebar.classList.add('minimized');
+            toggleIcon.className = 'fas fa-indent text-slate-400 text-xs';
         }
     </script>
-    <script src="js/admin-products.js"></script>
-    <script>if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
 </body>
 </html>
