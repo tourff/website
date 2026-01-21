@@ -83,7 +83,7 @@
                 <nav class="space-y-1">
                     <div class="sidebar-item"><i class="fas fa-shield-virus text-teal-500"></i> <span>Fraud Control</span> <span class="badge-new">NEW</span></div>
                     <div id="side-intelligence" class="sidebar-item"><i class="fas fa-user-cog text-slate-500"></i> <span>User Intelligence</span> <span class="badge-new">NEW</span></div>
-                    <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full text-left"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
+                    <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
                 </nav>
             </div>
         </div>
@@ -93,8 +93,8 @@
         <header class="bg-white border-b border-slate-200 p-6 sticky top-0 z-50 transition-all dark:bg-[#161021]">
             <div class="flex justify-between items-center text-left">
                 <div>
-                    <h2 id="page-title" class="text-3xl font-black text-slate-800 dark:text-white">Good Morning, Admin! <span class="text-blue-500 text-xl">✔</span></h2>
-                    <p id="page-desc" class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Here's your command center for today</p>
+                    <h2 class="text-3xl font-black text-slate-800 dark:text-white">Good Morning, Admin! <span class="text-blue-500 text-xl">✔</span></h2>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Here's your command center for today</p>
                 </div>
                 <div class="flex items-center gap-4">
                     <p id="current-date" class="text-xs font-bold text-slate-500 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-xl"></p>
@@ -105,7 +105,7 @@
             </div>
         </header>
 
-        <div id="main-content" class="p-6 space-y-8">
+        <div class="p-6 space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
                 <div class="lg:col-span-2 space-y-6">
                     <section class="glass-card p-6">
@@ -124,11 +124,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="glass-card p-8 border-l-4 border-blue-500">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today Revenue</p>
-                            <h4 id="today-income" class="text-4xl font-black mt-2 text-slate-800 dark:text-white">৳0</h4>
+                            <h4 id="today-income" class="text-4xl font-black mt-2">৳0</h4>
                         </div>
                         <div class="glass-card p-8 border-l-4 border-green-500">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today Orders</p>
-                            <h4 id="month-orders" class="text-4xl font-black mt-2 text-slate-800 dark:text-white">0 Orders</h4>
+                            <h4 id="month-orders" class="text-4xl font-black mt-2">0 Orders</h4>
                         </div>
                     </div>
                 </div>
@@ -136,7 +136,10 @@
                     <h3 class="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-6">Daily Operations</h3>
                     <div class="space-y-4">
                         <div class="operation-item border-l-4 border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10">
-                            <input type="checkbox" class="rounded"><div class="ml-3"><p class="text-xs font-bold">Process pending orders</p><span class="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded font-bold uppercase">SYSTEM</span></div>
+                            <input type="checkbox" class="rounded"><div class="ml-3"><p class="text-xs font-bold">Process 6 pending orders</p><span class="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded font-bold uppercase">SYSTEM</span></div>
+                        </div>
+                        <div class="operation-item border-l-4 border-yellow-400 bg-yellow-50/50 dark:bg-yellow-900/10">
+                            <input type="checkbox" class="rounded"><div class="ml-3"><p class="text-xs font-bold">Review 1 new orders</p><span class="text-[9px] bg-yellow-100 text-yellow-700 px-1 rounded font-bold uppercase">SYSTEM</span></div>
                         </div>
                     </div>
                 </section>
@@ -148,7 +151,7 @@
                     <div class="lg:col-span-2"><section class="glass-card p-6"><div class="flex justify-between items-center mb-6"><h3 class="font-black text-slate-800 dark:text-white">Revenue Trend</h3><span class="text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded font-bold uppercase">Last 14 Days</span></div><div class="h-[280px]"><canvas id="revenueChart"></canvas></div></section></div>
                     <section class="glass-card p-6 text-center">
                         <h3 class="font-black text-[10px] uppercase tracking-widest text-slate-400 mb-8 text-left">Order Status</h3>
-                        <div class="relative flex justify-center items-center h-[200px]"><canvas id="orderStatusChart"></canvas><div class="absolute"><p id="total-orders-count" class="text-3xl font-black text-slate-800 dark:text-white">0</p><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p></div></div>
+                        <div class="relative flex justify-center items-center h-[200px]"><canvas id="orderStatusChart"></canvas><div class="absolute"><p id="total-orders-count" class="text-3xl font-black">0</p><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p></div></div>
                         <div class="mt-8 space-y-3 px-4">
                             <div class="flex justify-between text-[10px] font-bold"><span class="text-yellow-500">Pending</span><span id="pending-count">0</span></div>
                             <div class="flex justify-between text-[10px] font-bold border-y border-slate-50 dark:border-slate-800 py-2"><span class="text-green-500">Completed</span><span id="completed-count">0</span></div>
@@ -190,6 +193,27 @@
         </div>
     </main>
 
+    <script>
+        const sidebar = document.getElementById('main-sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        toggleBtn.onclick = () => {
+            sidebar.classList.toggle('minimized');
+            const isMinimized = sidebar.classList.contains('minimized');
+            if (isMinimized) {
+                toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+            } else {
+                toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+            }
+            localStorage.setItem('sidebar-minimized', isMinimized);
+        };
+
+        if (localStorage.getItem('sidebar-minimized') === 'true') {
+            sidebar.classList.add('minimized');
+            toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+        }
+    </script>
     <script src="js/admin.js"></script>
 </body>
 </html>
