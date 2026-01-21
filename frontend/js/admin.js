@@ -24,41 +24,49 @@ window.onload = () => {
 
 // ১. নেভিগেশন লজিক: সাইডবার এবং কুইক অ্যাকশন কার্ড কানেক্ট করা
 function initNavigation() {
-    // ক) Products পেজ
+    // কমন ফাংশন: সেশন সেট করে পেজ পরিবর্তন করা
+    const goToPage = (page) => {
+        sessionStorage.setItem('adminAuth', ADMIN_PASS);
+        window.location.href = page;
+    };
+
+    // ক) Dashboard
+    const dashBtn = document.querySelector('.sidebar-item i.fa-th-large')?.parentElement;
+    if (dashBtn) dashBtn.onclick = () => goToPage('admin.html');
+
+    // খ) Products পেজ (সাইডবার এবং কুইক কার্ড উভয়ই)
     const prodBtn = document.querySelector('.sidebar-item i.fa-box')?.parentElement || 
                     document.getElementById('quick-products');
-    if (prodBtn) prodBtn.onclick = () => {
-        sessionStorage.setItem('adminAuth', ADMIN_PASS);
-        window.location.href = 'admin-products.html';
-    };
+    if (prodBtn) prodBtn.onclick = () => goToPage('admin-products.html');
 
-    // খ) Orders পেজ
+    // গ) Orders পেজ
     const orderBtn = document.querySelector('.sidebar-item i.fa-shopping-cart')?.parentElement || 
                      document.querySelector('.action-card i.fa-shopping-cart')?.parentElement;
-    if (orderBtn) orderBtn.onclick = () => {
-        sessionStorage.setItem('adminAuth', ADMIN_PASS);
-        window.location.href = 'admin-orders.html';
-    };
+    if (orderBtn) orderBtn.onclick = () => goToPage('admin-orders.html');
 
-    // গ) Slider ম্যানেজমেন্ট (Chats কার্ড থেকে রূপান্তর)
-    const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement;
-    if (sliderCard) {
-        sliderCard.innerHTML = `<i class="fas fa-images text-purple-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Slider</span>`;
-        sliderCard.onclick = () => {
-            sessionStorage.setItem('adminAuth', ADMIN_PASS);
-            window.location.href = 'admin-slider.html';
-        };
-    }
-
-    // ঘ) User Intelligence নেভিগেশন (সাইডবার থেকে)
+    // ঘ) User Intelligence নেভিগেশন
     const intelligenceBtn = document.getElementById('side-intelligence') || 
                             document.querySelector('.sidebar-item i.fa-user-cog')?.parentElement;
-    if (intelligenceBtn) {
-        intelligenceBtn.onclick = () => {
-            sessionStorage.setItem('adminAuth', ADMIN_PASS); 
-            window.location.href = 'admin-intelligence.html'; 
-        };
+    if (intelligenceBtn) intelligenceBtn.onclick = () => goToPage('admin-intelligence.html');
+
+    // ঙ) Slider ম্যানেজমেন্ট (Chats কার্ড থেকে রূপান্তর)
+    const sliderCard = document.querySelector('.action-card i.fa-comments')?.parentElement ||
+                       document.querySelector('.action-card i.fa-images')?.parentElement;
+    if (sliderCard) {
+        sliderCard.innerHTML = `<i class="fas fa-images text-purple-500 text-xl"></i><span class="text-[10px] font-bold uppercase">Slider</span>`;
+        sliderCard.onclick = () => goToPage('admin-slider.html');
     }
+
+    // চ) Fraud Control
+    const fraudBtn = document.querySelector('.sidebar-item i.fa-shield-virus')?.parentElement;
+    if (fraudBtn) fraudBtn.onclick = () => goToPage('admin-fraud.html');
+
+    // ছ) Analytics & Reports (আপাতত লগ চেক করা হচ্ছে)
+    const analyticsBtn = document.querySelector('.sidebar-item i.fa-chart-pie')?.parentElement;
+    if (analyticsBtn) analyticsBtn.onclick = () => console.log("Analytics Clicked");
+    
+    const reportsBtn = document.querySelector('.sidebar-item i.fa-file-alt')?.parentElement;
+    if (reportsBtn) reportsBtn.onclick = () => console.log("Reports Clicked");
 }
 
 // ২. সাইডবার মিনিমাইজ করার লজিক
@@ -90,7 +98,7 @@ function initSidebarToggle() {
     };
 }
 
-// থিম, ডাটা রিফ্রেশ এবং চার্ট লজিক আগের মতোই থাকবে
+// থিম, ডাটা রিফ্রেশ এবং চার্ট লজিক
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
