@@ -3,49 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management | Prime Products BD</title>
+    <title>Manage Orders | PHB Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
-        .dark body { background-color: #0d0915; color: white; }
-        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: 0.3s; }
-        .dark .glass-card { background: rgba(22, 16, 33, 0.7); border-color: rgba(255, 255, 255, 0.05); }
-        .status-badge { font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s; }
+        
+        /* Permanent Sidebar CSS */
+        #main-sidebar {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        #main-sidebar.minimized {
+            width: 85px;
+            padding: 24px 12px;
+        }
+
+        #main-sidebar.minimized .sidebar-logo,
+        #main-sidebar.minimized nav span,
+        #main-sidebar.minimized .badge-new,
+        #main-sidebar.minimized .menu-label {
+            display: none;
+        }
+
+        #main-sidebar.minimized .sidebar-item {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; transition: 0.3s; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .sidebar-item:hover, .sidebar-item.active { background: #f1f5f9; color: #2563eb; }
+        
+        /* Dark Mode */
+        .dark body { background-color: #0d0915 !important; color: white !important; }
+        .dark aside { background-color: #161021 !important; border-color: rgba(255,255,255,0.05) !important; }
+        .dark .sidebar-item { color: #94a3b8; }
+        .dark .sidebar-item:hover, .dark .sidebar-item.active { background: #1e162e !important; color: #f43f5e !important; }
     </style>
 </head>
-<body class="p-8 lg:p-12">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-10 text-left">
-            <div>
-                <a href="admin.html" class="text-blue-600 font-bold text-xs uppercase tracking-widest hover:underline"><i class="fas fa-arrow-left mr-2"></i> Dashboard</a>
-                <h1 class="text-3xl font-black mt-2">Order Management</h1>
+<body class="flex min-h-screen transition-all">
+
+    <aside id="main-sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col sticky top-0 h-screen overflow-y-auto z-[60]">
+        <div class="flex items-center justify-between mb-10 px-2">
+            <div class="sidebar-logo text-left">
+                <h1 class="font-extrabold text-lg tracking-tighter text-blue-600 dark:text-rose-500 uppercase">PHB Admin</h1>
             </div>
-            <button onclick="fetchOrders()" class="bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl hover:scale-110 transition">
-                <i class="fas fa-sync-alt text-blue-600"></i>
+            <button id="sidebar-toggle" class="w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <i id="toggle-icon" class="fas fa-chevron-left text-slate-400 text-xs"></i>
             </button>
+        </div>
+
+        <div class="space-y-6 text-left">
+            <nav class="space-y-1">
+                <div class="sidebar-item" onclick="navigate('admin.html')"><i class="fas fa-th-large"></i> <span>Dashboard</span></div>
+                <div class="sidebar-item" onclick="navigate('admin-products.html')"><i class="fas fa-box"></i> <span>Products</span></div>
+                <div class="sidebar-item active"><i class="fas fa-shopping-cart"></i> <span>Orders</span></div>
+                <div id="side-intelligence" class="sidebar-item" onclick="navigate('admin-intelligence.html')"><i class="fas fa-user-cog"></i> <span>User Intelligence</span></div>
+                <button onclick="handleAdminLogout()" class="sidebar-item text-rose-500 w-full"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-x-hidden">
+        <header class="bg-white border-b border-slate-200 p-6 dark:bg-[#161021]">
+            <h2 class="text-2xl font-black">Manage Orders</h2>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Handle customer requests and shipping</p>
         </header>
 
-        <section class="glass-card p-8">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b dark:border-slate-800">
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Customer</th>
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Amount</th>
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase">Status</th>
-                            <th class="py-4 px-2 text-[10px] font-black text-slate-400 uppercase text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="order-list-body"></tbody>
-                </table>
+        <div class="p-8">
+            <div class="bg-white dark:bg-[#161021] border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
+                <p class="text-slate-500 font-bold uppercase text-[10px] tracking-widest mb-4">Order Queue</p>
+                <div id="orders-list-container" class="space-y-4">
+                    <p class="text-center py-12 text-slate-400 text-xs font-bold uppercase tracking-widest">Loading orders from server...</p>
+                </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </main>
 
-    <script src="js/admin-orders.js"></script>
-    <script>if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
+    <script>
+        // সাইডবার টগল লজিক
+        const sidebar = document.getElementById('main-sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        if (localStorage.getItem('sidebar-minimized') === 'true') {
+            sidebar.classList.add('minimized');
+            toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+        }
+
+        toggleBtn.onclick = () => {
+            sidebar.classList.toggle('minimized');
+            const isMinimized = sidebar.classList.contains('minimized');
+            if (isMinimized) toggleIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+            else toggleIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+            localStorage.setItem('sidebar-minimized', isMinimized);
+        };
+
+        function navigate(page) {
+            sessionStorage.setItem('adminAuth', "turjo0424");
+            window.location.href = page;
+        }
+    </script>
+    <script src="js/admin.js"></script>
 </body>
 </html>
