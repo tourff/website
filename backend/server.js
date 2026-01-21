@@ -78,7 +78,7 @@ app.get('/admin/analytics', async (req, res) => {
     }
 });
 
-// ২. প্রোডাক্ট রুটসমূহ (Updated for Inventory System)
+// ২. প্রোডাক্ট রুটসমূহ
 app.get('/products', async (req, res) => {
     try {
         const products = await Product.find().sort({ createdAt: -1 });
@@ -95,8 +95,8 @@ app.post('/admin/add-product', async (req, res) => {
             price: req.body.price,
             oldPrice: req.body.oldPrice,
             image: req.body.image,
-            stockQuantity: req.body.stock, // UI থেকে 'stock' হিসেবে আসছে
-            description: req.body.desc,    // UI থেকে 'desc' হিসেবে আসছে
+            stockQuantity: req.body.stock,
+            description: req.body.desc,
             inStock: req.body.stock > 0
         };
         const product = new Product(productData);
@@ -163,13 +163,8 @@ app.delete('/admin/delete-order/:id', async (req, res) => {
     }
 });
 
-// ৪. স্লাইডার এবং ইউজার অথ (বাকি রুটগুলো অপরিবর্তিত)
+// ৪. স্লাইডার এবং ইউজার অথ
 app.get('/sliders', async (req, res) => {
-    const banners = await Banner.find();
-    res.json(banners);
-});
-
-app.get('/banners', async (req, res) => {
     const banners = await Banner.find();
     res.json(banners);
 });
@@ -192,15 +187,44 @@ app.post('/auth/login', async (req, res) => {
     res.json({ message: "Login successful", user: { name: user.name, email: user.email } });
 });
 
+// --- ৫. উন্নত ইউজার ইন্টেলিজেন্স রুট (Updated) ---
+// এই রুটটি admin-intelligence.js থেকে কল করা হবে
 app.get('/admin/user-intelligence', async (req, res) => {
     try {
+        // ১. টোটাল ইউজার কাউন্ট করা
         const totalUsers = await User.countDocuments();
+
+        // ২. আজকের (গত ২৪ ঘণ্টা) নতুন ইউজার কাউন্ট
         const startOfToday = new Date();
-        startOfToday.setHours(0,0,0,0);
-        const todayNewUsers = await User.countDocuments({ createdAt: { $gte: startOfToday } });
-        res.json({ totalUsers, todayNewUsers, deviceStats: { mobile: 74, desktop: 26 } });
+        startOfToday.setHours(0, 0, 0, 0);
+        const todayNewUsers = await User.countDocuments({ 
+            createdAt: { $gte: startOfToday } 
+        });
+
+        // ৩. হাই রিস্ক অর্ডার ক্যালকুলেশন (৳৫০০০ এর বেশি এবং Pending)
+        const highRiskOrders = await Order.countDocuments({ 
+            totalAmount: { $gt: 5000 }, 
+            status: 'Pending' 
+        });
+
+        // ৪. ডিভাইস স্ট্যাটাস (নমুনা ডাটা)
+        const deviceStats = {
+            mobile: 74,
+            desktop: 22,
+            bot: 3,
+            unknown: 1
+        };
+
+        // সব ডাটা অবজেক্ট আকারে পাঠানো হচ্ছে
+        res.json({
+            totalUsers,
+            todayNewUsers,
+            highRiskOrders,
+            deviceStats
+        });
     } catch (err) {
-        res.status(500).json({ message: "Intelligence failed" });
+        console.error("User Intelligence Error:", err);
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
 
