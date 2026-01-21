@@ -3,60 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | Prime Products BD</title>
+    <title>Admin Panel | Prime Products BD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0d0915; overflow: hidden; }
-        .login-card { background: rgba(22, 16, 33, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .gradient-btn { background: linear-gradient(90deg, #9333ea, #db2777); transition: 0.3s; }
-        .gradient-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(219, 39, 119, 0.3); }
-        .input-box { background: #1e162e; border: 1px solid #2d2341; color: white; transition: 0.3s; outline: none; }
-        .input-box:focus { border-color: #f43f5e; box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2); }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #0d0915; 
+            overflow: hidden; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: screen;
+        }
+
+        /* প্রফেশনাল গ্লাস ইফেক্ট */
+        .login-card { 
+            background: rgba(22, 16, 33, 0.7); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* থিম কালার গ্রেডিয়েন্ট বাটন */
+        .gradient-btn { 
+            background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gradient-btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 15px 30px rgba(147, 51, 234, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .input-box { 
+            background: rgba(30, 22, 46, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: white; 
+            transition: 0.3s; 
+            outline: none; 
+        }
+
+        .input-box:focus { 
+            border-color: #f43f5e; 
+            background: rgba(30, 22, 46, 0.9);
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.15); 
+        }
+
+        /* অ্যানিমেটেড ব্যাকগ্রাউন্ড গ্লো */
+        .glow-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            animation: pulse 10s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.3; }
+            100% { transform: scale(1.2) translate(20px, 20px); opacity: 0.5; }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen px-4">
-    <div class="fixed top-[-10%] right-[-10%] w-[350px] h-[350px] bg-purple-600/20 rounded-full blur-[100px]"></div>
-    <div class="fixed bottom-[-10%] left-[-10%] w-[350px] h-[350px] bg-rose-600/20 rounded-full blur-[100px]"></div>
+<body class="min-h-screen w-full relative">
 
-    <div class="w-full max-w-[400px] z-10">
-        <div class="login-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl text-center">
-            <div class="mb-8">
-                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <i class="fas fa-user-shield text-2xl text-black"></i>
+    <div class="glow-circle w-[400px] h-[400px] bg-purple-600 top-[-10%] left-[-5%]"></div>
+    <div class="glow-circle w-[350px] h-[350px] bg-rose-600 bottom-[-10%] right-[-5%]"></div>
+
+    <div class="w-full max-w-[420px] p-6 relative z-10">
+        <div class="login-card rounded-[3rem] p-10 md:p-12 text-center">
+            
+            <div class="mb-10">
+                <div class="w-20 h-20 bg-gradient-to-tr from-white to-gray-200 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                    <i class="fas fa-shield-halved text-3xl text-[#0d0915]"></i>
                 </div>
-                <h1 class="text-xl font-extrabold text-white tracking-tighter uppercase">Admin Portal</h1>
-                <p class="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">Prime Products BD</p>
+                <h1 class="text-3xl font-extrabold text-white tracking-tighter uppercase mb-2">Admin Panel</h1>
+                <div class="flex items-center justify-center gap-2">
+                    <span class="h-[1px] w-8 bg-gray-700"></span>
+                    <p class="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em]">Prime Products BD</p>
+                    <span class="h-[1px] w-8 bg-gray-700"></span>
+                </div>
             </div>
 
-            <form id="adminLoginForm" class="space-y-6 text-left">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Master Password</label>
-                    <div class="relative mt-2">
-                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input type="password" id="adminPassInput" required placeholder="••••••••" 
-                            class="w-full input-box py-3.5 pl-11 pr-4 rounded-xl text-sm">
+            <form id="adminLoginForm" class="space-y-7 text-left">
+                <div class="group">
+                    <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1 group-focus-within:text-rose-400 transition-colors">Security Key</label>
+                    <div class="relative mt-2.5">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-key text-gray-500 text-xs group-focus-within:text-rose-500"></i>
+                        </div>
+                        <input type="password" id="adminPassInput" required placeholder="Enter Secret Password" 
+                            class="w-full input-box py-4 pl-12 pr-4 rounded-2xl text-sm placeholder:text-gray-600 font-medium">
                     </div>
                 </div>
-                <button type="submit" class="w-full gradient-btn py-4 rounded-xl text-white font-bold text-[10px] uppercase tracking-[0.2em]">
-                    Authorize Access
+
+                <button type="submit" class="w-full gradient-btn py-4.5 rounded-2xl text-white font-extrabold text-[11px] uppercase tracking-[0.2em] shadow-lg active:scale-95">
+                    Verify & Enter <i class="fas fa-arrow-right ml-2 text-[9px]"></i>
                 </button>
-                <p id="errorMsg" class="text-rose-500 text-[10px] text-center font-bold uppercase hidden mt-4">Access Denied: Wrong Password</p>
+
+                <p id="errorMsg" class="text-rose-500 text-[10px] text-center font-bold uppercase hidden animate-bounce">
+                    <i class="fas fa-circle-exclamation mr-1"></i> Authentication Failed
+                </p>
             </form>
+
+            <div class="mt-10">
+                <a href="index.html" class="text-gray-600 hover:text-rose-400 text-[10px] font-bold uppercase transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-chevron-left text-[8px]"></i> Return to Site
+                </a>
+            </div>
         </div>
     </div>
 
     <script>
         const ADMIN_PASS = "turjo0424";
+        
         document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const input = document.getElementById('adminPassInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
             if (input === ADMIN_PASS) {
                 localStorage.setItem('adminAuth', ADMIN_PASS);
+                // সাকসেস এনিমেশন বা সরাসরি রিডাইরেক্ট
                 window.location.href = 'admin.html';
             } else {
-                document.getElementById('errorMsg').classList.remove('hidden');
+                errorMsg.classList.remove('hidden');
+                // ভুল পাসওয়ার্ড দিলে ইনপুট বক্সটি লাল বর্ডার হবে
+                document.getElementById('adminPassInput').style.borderColor = '#f43f5e';
             }
         });
     </script>
