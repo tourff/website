@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Prime Products BD</title>
+    
+    <script>
+        if (sessionStorage.getItem('adminAuth') !== "turjo0424") {
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,7 +23,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
         
-        /* ১. সাইডবার স্মুথ ট্রানজিশন লজিক */
         #main-sidebar { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; }
         #main-sidebar.minimized { width: 85px; padding: 24px 12px; }
         #main-sidebar.minimized .sidebar-logo h1, #main-sidebar.minimized .sidebar-logo p, 
@@ -25,7 +31,6 @@
         #main-sidebar.minimized .sidebar-item { justify-content: center; padding: 12px 0; }
         #main-sidebar.minimized .sidebar-item i { margin: 0; font-size: 18px; }
 
-        /* ড্যাশবোর্ড স্টাইল */
         body { background-color: #f8fafc; color: #1e293b; }
         .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; transition: 0.3s; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; }
         .sidebar-item:hover, .sidebar-item.active { background: #f1f5f9; color: #2563eb; }
