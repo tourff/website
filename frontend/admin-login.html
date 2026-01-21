@@ -54,15 +54,20 @@
     </div>
 
     <script>
-        const ADMIN_PASS = "turjo0424";
+        const ADMIN_PASS = "turjo0424"; // আপনার মাস্টার পাসওয়ার্ড
+
         document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const input = document.getElementById('adminPassInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
             if (input === ADMIN_PASS) {
-                localStorage.setItem('adminAuth', ADMIN_PASS);
-                window.location.href = 'admin.html';
+                // এখানে localStorage বদলে sessionStorage করা হয়েছে যাতে admin.js এর সাথে মেলে
+                sessionStorage.setItem('adminAuth', ADMIN_PASS); 
+                window.location.href = 'admin.html'; // সরাসরি ড্যাশবোর্ডে পাঠাবে
             } else {
-                document.getElementById('errorMsg').classList.remove('hidden');
+                errorMsg.classList.remove('hidden');
+                document.getElementById('adminPassInput').value = '';
             }
         });
     </script>
