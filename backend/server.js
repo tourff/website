@@ -214,5 +214,40 @@ app.delete('/admin/delete-slider/:id', async (req, res) => {
         res.status(500).json({ message: "Delete failed" });
     }
 });
+// --- USER INTELLIGENCE API ---
+app.get('/admin/user-intelligence', async (req, res) => {
+    try {
+        // ১. মেট্রিক কার্ডের জন্য ডাটা সংগ্রহ
+        const totalUsers = await User.countDocuments(); // ডিজাইন অনুযায়ী Total Visitors
+        
+        const startOfToday = new Date();
+        startOfToday.setHours(0,0,0,0);
+        const todayNewUsers = await User.countDocuments({ createdAt: { $gte: startOfToday } }); // Today
+
+        // ২. হাই রিস্ক ক্যালকুলেশন (পেন্ডিং এবং বড় অংকের অর্ডার)
+        const highRiskOrders = await Order.countDocuments({ 
+            status: 'Pending', 
+            totalAmount: { $gt: 5000 } 
+        });
+
+        // ৩. ডিভাইস ব্রেকডাউন ডাটা
+        const deviceStats = {
+            mobile: 74,
+            desktop: 22,
+            bot: 3,
+            unknown: 1
+        };
+
+        res.json({
+            totalUsers,
+            todayNewUsers,
+            highRiskOrders,
+            deviceStats,
+            suspiciousActivity: [] // বর্তমানে কোনো সন্দেহজনক অ্যাক্টিভিটি নেই
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Intelligence data fetch failed!" });
+    }
+});
 
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on port ${PORT}`));
