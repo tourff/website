@@ -3,13 +3,15 @@ const API_URL = `${BASE_URL}/products`;
 const WHATSAPP_NUMBER = '8801847853867'; 
 let allProducts = [];
 let cart = []; 
+let currentSlide = 0; // স্লাইডার ভেরিয়েবল
+let banners = [];     // স্লাইডার ভেরিয়েবল
 
 // ১. প্রোফাইল ও ইউজার হ্যান্ডেলার (LocalStorage থেকে ডাটা রিড করা)
 const userName = localStorage.getItem('userName');
 const userEmail = localStorage.getItem('userEmail');
 const authNav = document.getElementById('auth-nav');
 
-if (userName) {
+if (userName && authNav) {
     authNav.innerHTML = `
         <div class="relative">
             <button onclick="toggleProfile()" class="flex flex-col items-end group">
@@ -44,26 +46,36 @@ function handleLogout() {
     }
 }
 
-// ২. ডাইনামিক ব্যানার ফেচ লজিক
+// ২. ডাইনামিক ব্যানার ফেচ লজিক (Updated endpoint to /sliders)
 async function fetchBanners() {
     try {
-        const res = await fetch(`${BASE_URL}/banners`);
-        const banners = await res.json();
+        // কনসোলে 404 আসছিল কারণ এন্ডপয়েন্ট ভুল ছিল, এখন /sliders ব্যবহার করা হয়েছে
+        const res = await fetch(`${BASE_URL}/sliders`); 
+        banners = await res.json();
         const slider = document.getElementById('slider');
         
-        if (banners.length > 0) {
-            slider.innerHTML = banners.map(b => `<img src="${b.imageUrl}" class="slider-img">`).join('');
-            setInterval(nextSlide, banners[0].displayTime || 5000);
+        if (slider && banners.length > 0) {
+            slider.innerHTML = banners.map(b => `
+                <div class="min-w-full h-full relative">
+                    <img src="${b.image}" class="w-full h-full object-cover">
+                    ${b.link ? `<a href="${b.link}" class="absolute inset-0"></a>` : ''}
+                </div>
+            `).join('');
+            
+            // অটো স্লাইড চালু করা
+            setInterval(nextSlide, 5000);
         }
-    } catch (err) { console.error("Error fetching banners"); }
+    } catch (err) { console.error("Error fetching banners:", err); }
 }
 
 // ৩. কার্ট ও ডাটাবেজ চেকআউট লজিক (আপডেটেড)
 function toggleCart() {
     const sidebar = document.getElementById('cart-sidebar');
     const overlay = document.getElementById('cart-overlay');
-    sidebar.classList.toggle('translate-x-full');
-    overlay.classList.toggle('hidden');
+    if(sidebar && overlay) {
+        sidebar.classList.toggle('translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
 }
 
 function addToCart(productId) {
@@ -71,7 +83,8 @@ function addToCart(productId) {
     if (product && product.inStock !== false) {
         cart.push(product);
         updateCartUI();
-        if(document.getElementById('cart-sidebar').classList.contains('translate-x-full')) toggleCart();
+        const sidebar = document.getElementById('cart-sidebar');
+        if(sidebar && sidebar.classList.contains('translate-x-full')) toggleCart();
     } else {
         alert("This product is currently out of stock!");
     }
@@ -81,6 +94,8 @@ function updateCartUI() {
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalLabel = document.getElementById('cart-total');
     const cartCountBtn = document.getElementById('cart-count-btn');
+    if(!cartItemsContainer) return;
+
     cartItemsContainer.innerHTML = cart.length === 0 ? `<p class="text-gray-500 text-center text-xs mt-10">Empty cart</p>` : '';
     let total = 0;
     cart.forEach((item, index) => {
@@ -92,13 +107,12 @@ function updateCartUI() {
                 <button onclick="removeFromCart(${index})" class="text-gray-600 hover:text-rose-500 transition"><i class="fas fa-trash-alt text-xs"></i></button>
             </div>`;
     });
-    cartTotalLabel.innerText = `৳${total}`;
-    cartCountBtn.innerText = `৳${total}`;
+    if(cartTotalLabel) cartTotalLabel.innerText = `৳${total}`;
+    if(cartCountBtn) cartCountBtn.innerText = `৳${total}`;
 }
 
 function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
 
-// মূল চেকআউট ফাংশন - ডাটাবেজে অর্ডার সেভ করা
 async function checkout() {
     if (!userName) {
         alert("Please login first to place an order!");
@@ -118,7 +132,6 @@ async function checkout() {
     };
 
     try {
-        // ১. ডাটাবেজে অর্ডার সেভ করা
         const res = await fetch(`${BASE_URL}/admin/place-order`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -126,41 +139,37 @@ async function checkout() {
         });
 
         if (res.ok) {
-            // ২. হোয়াটসঅ্যাপ মেসেজ তৈরি ও পাঠানো
             let message = `*--- NEW ORDER (Turjo Site) ---*\n👤 *Customer:* ${userName}\n📧 *Email:* ${userEmail}\n\n📦 *Items:* \n`;
             cart.forEach((item, i) => { message += `${i + 1}. ${item.name} - ৳${item.price}\n`; });
             message += `\n💰 *Total Amount:* ৳${totalAmount}\n\n_I have placed my order on the website._`;
             
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
             
-            alert("Order saved in database and redirecting to WhatsApp!");
+            alert("Order saved and redirecting to WhatsApp!");
             cart = [];
             updateCartUI();
             toggleCart();
         } else {
-            alert("Failed to save order in database!");
+            alert("Failed to save order!");
         }
     } catch (err) {
         console.error("Order processing error:", err);
-        alert("Server error while placing order!");
+        alert("Server error!");
     }
 }
 
 // ৪. স্লাইডার কন্ট্রোল
-let currentSlide = 0;
 function nextSlide() {
     const slider = document.getElementById('slider');
-    const slides = slider.querySelectorAll('img');
-    if (!slides || slides.length === 0) return;
-    currentSlide = (currentSlide + 1) % slides.length;
+    if (!slider || banners.length === 0) return;
+    currentSlide = (currentSlide + 1) % banners.length;
     slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
 
 function prevSlide() {
     const slider = document.getElementById('slider');
-    const slides = slider.querySelectorAll('img');
-    if (!slides || slides.length === 0) return;
-    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    if (!slider || banners.length === 0) return;
+    currentSlide = (currentSlide - 1 + banners.length) % banners.length;
     slider.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
 
@@ -178,7 +187,7 @@ function displayProducts(products) {
     const countLabel = document.getElementById('item-count');
     if(!container) return;
     container.innerHTML = '';
-    countLabel.innerText = `${products.length} items available`;
+    if(countLabel) countLabel.innerText = `${products.length} items available`;
     
     products.forEach(p => {
         const hasDiscount = p.oldPrice && p.oldPrice > p.price;
@@ -211,15 +220,16 @@ function displayProducts(products) {
 
 // ফিল্টার ও সার্চ
 function sortProducts() {
-    const type = document.getElementById('sort-filter').value;
+    const type = document.getElementById('sort-filter')?.value;
     let sorted = [...allProducts];
-    if (type === 'low-high') sorted.sort((a,b) => a.price - b.price); else if (type === 'high-low') sorted.sort((a,b) => b.price - a.price);
+    if (type === 'low-high') sorted.sort((a,b) => a.price - b.price); 
+    else if (type === 'high-low') sorted.sort((a,b) => b.price - a.price);
     displayProducts(sorted);
 }
 
 function searchProducts() {
-    const term = document.getElementById('search-input').value.toLowerCase();
-    displayProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
+    const term = document.getElementById('search-input')?.value.toLowerCase();
+    if(term) displayProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
 }
 
 // ইনিশিয়াল কল
