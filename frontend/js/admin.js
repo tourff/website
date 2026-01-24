@@ -13,14 +13,20 @@ window.onload = () => {
     const dateEl = document.getElementById('current-date');
     if (dateEl) dateEl.innerText = new Date().toLocaleDateString('en-US', options);
 
+    // সিকিউরিটি চেক
     const auth = sessionStorage.getItem('adminAuth'); 
     if (auth !== ADMIN_PASS) {
         window.location.href = 'admin-login.html'; 
     } else {
-        loadPage('dashboard');
+        // ড্যাশবোর্ড লোড করার সময় চেক করা হচ্ছে এটি কোন ফাইল থেকে কল হচ্ছে
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('admin.html') || currentPath.endsWith('/')) {
+            loadPage('dashboard');
+        }
     }
 };
 
+// ১. নেভিগেশন কন্ট্রোল (আপনার চাহিদা অনুযায়ী রিডাইরেক্ট লজিক)
 function initNavigation() {
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.onclick = () => {
@@ -28,25 +34,34 @@ function initNavigation() {
             if(!span) return;
             const text = span.innerText.toLowerCase();
             
+            // অ্যাক্টিভ ক্লাস ম্যানেজমেন্ট
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
-            if (text.includes('dashboard')) loadPage('dashboard');
+            // আপনার চাহিদা মতো সরাসরি ফাইল রিডাইরেক্ট লজিক
+            if (text.includes('dashboard')) {
+                // যদি অলরেডি admin.html এ থাকেন তবে শুধু কন্টেন্ট রিফ্রেশ করবে
+                if (window.location.pathname.includes('admin.html')) loadPage('dashboard');
+                else window.location.href = 'admin.html';
+            } 
             else if (text.includes('products')) window.location.href = 'admin-products.html'; 
             else if (text.includes('orders')) window.location.href = 'admin-orders.html'; 
+            else if (text.includes('intelligence')) window.location.href = 'admin-intelligence.html';
+            
+            // স্লাইডার এবং অ্যানালিটিক্স admin.html এর ভেতরেই লোড হবে
             else if (text.includes('slider')) loadPage('slider');
             else if (text.includes('analytics')) loadPage('analytics');
-            // User Intelligence এর জন্য সরাসরি ফাইল রিডাইরেক্ট
-            else if (text.includes('intelligence')) window.location.href = 'admin-intelligence.html';
         };
     });
 }
 
+// ২. পেজ কন্টেন্ট লোডার (SPA logic for Dashboard & Slider)
 async function loadPage(page) {
     const mainContent = document.getElementById('main-content');
     if (!mainContent) return;
 
     if (page === 'dashboard') {
+        // ড্যাশবোর্ডের মূল স্ট্রাকচার লোড করা (যদি প্রয়োজন হয়)
         refreshData(); 
     } else if (page === 'slider') {
         mainContent.innerHTML = `
@@ -55,7 +70,6 @@ async function loadPage(page) {
                     <h2 class="text-3xl font-black text-slate-800 dark:text-white">Slider Management</h2>
                     <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Update website hero banners</p>
                 </div>
-                
                 <section class="glass-card p-8">
                     <div class="flex flex-col md:flex-row gap-6 items-end">
                         <div class="flex-1 space-y-2">
@@ -67,7 +81,6 @@ async function loadPage(page) {
                         </button>
                     </div>
                 </section>
-
                 <div id="slider-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
                     <div class="col-span-full py-20 text-center opacity-20">
                         <i class="fas fa-images text-6xl mb-4 text-slate-400"></i>
@@ -86,9 +99,10 @@ async function loadPage(page) {
     }
 }
 
-// --- স্লাইডার ফাংশনসমূহ ---
+// --- স্লাইডার ফাংশনসমূহ (ব্যাকএন্ডের /sliders এন্ডপয়েন্ট ব্যবহার করে) ---
 async function fetchSliders() {
     const container = document.getElementById('slider-list');
+    if (!container) return;
     try {
         const res = await fetch(`${BASE_URL}/sliders`);
         const sliders = await res.json();
@@ -100,7 +114,7 @@ async function fetchSliders() {
 
         container.innerHTML = sliders.map(s => `
             <div class="glass-card overflow-hidden group relative transition-all hover:shadow-xl">
-                <img src="${s.imageUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500">
+                <img src="${s.imageUrl || s.image}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500">
                 <div class="p-4 flex justify-between items-center bg-white dark:bg-[#161021]">
                     <span class="text-[9px] font-black text-slate-400 uppercase">ID: ${s._id.slice(-6)}</span>
                     <button onclick="deleteSlider('${s._id}')" class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition">
@@ -160,8 +174,6 @@ async function refreshData() {
         renderTopProducts(orders, products);
     } catch (err) {
         console.error("Dashboard Sync Failed:", err);
-        const incomeEl = document.getElementById('today-income');
-        if (incomeEl) incomeEl.innerText = "Error";
     }
 }
 
@@ -260,7 +272,10 @@ function initSidebarToggle() {
         if (toggleIcon) toggleIcon.className = isMin ? 'fas fa-chevron-right text-slate-400 text-xs' : 'fas fa-chevron-left text-slate-400 text-xs';
         localStorage.setItem('sidebar-minimized', isMin);
     };
-    if (localStorage.getItem('sidebar-minimized') === 'true') { sidebar.classList.add('minimized'); if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right text-slate-400 text-xs'; }
+    if (localStorage.getItem('sidebar-minimized') === 'true') { 
+        sidebar.classList.add('minimized'); 
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right text-slate-400 text-xs'; 
+    }
 }
 
 function handleAdminLogout() { if(confirm("Logout?")) { sessionStorage.removeItem('adminAuth'); window.location.href = 'admin-login.html'; } }
